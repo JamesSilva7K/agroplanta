@@ -1,0 +1,354 @@
+/**
+ * Plantae Agrocrédito - Intelligent Tracking, Dynamic Theming & WhatsApp Routing Engine
+ * Automatically tracks page inputs and exits, session duration, device types,
+ * dynamically injects primary colors and banners configured by the Supreme Admin,
+ * intercepts CTA clicks, routes to context-aware WhatsApp messages,
+ * and monitors social media traffic.
+ */
+
+(function () {
+  'use strict';
+
+  // 1. Session & Timing Management
+  const STORAGE_KEY = 'plantae_session_id';
+  let sessionId = localStorage.getItem(STORAGE_KEY);
+  if (!sessionId) {
+    sessionId = 'pl_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 7);
+    localStorage.setItem(STORAGE_KEY, sessionId);
+  }
+
+  const pageStartTime = Date.now();
+  let exitRecorded = false;
+
+  // Parse UTM parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const utmSource = urlParams.get('utm_source') || '';
+  const utmMedium = urlParams.get('utm_medium') || '';
+  const utmCampaign = urlParams.get('utm_campaign') || '';
+
+  // Device detection
+  function getDeviceType() {
+    const width = window.innerWidth;
+    const ua = navigator.userAgent.toLowerCase();
+    if (/tablet|ipad|playbook|silk/i.test(ua) || (width >= 768 && width <= 1024)) {
+      return 'Tablet';
+    }
+    if (/mobile|iphone|ipod|android|blackberry|opera mini|windows phone/i.test(ua) || width < 768) {
+      return 'Mobile';
+    }
+    return 'Desktop';
+  }
+
+  // 2. Track Event via Beacon / Fetch
+  function trackEvent(type, data = {}) {
+    const duration = Math.max(0, Math.round((Date.now() - pageStartTime) / 1000));
+    const payload = {
+      type: type,
+      session_id: sessionId,
+      referrer: document.referrer || '',
+      utm_source: utmSource,
+      utm_medium: utmMedium,
+      utm_campaign: utmCampaign,
+      device: getDeviceType(),
+      os: navigator.platform || '',
+      duration_seconds: duration,
+      ...data
+    };
+
+    try {
+      if (navigator.sendBeacon) {
+        const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+        navigator.sendBeacon('/api/track/event', blob);
+      } else {
+        fetch('/api/track/event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          keepalive: true
+        }).catch(function () {});
+      }
+    } catch (e) {
+      // Fallback silent
+    }
+  }
+
+  // 3. Register Page Input (Visit) & Exit (Unload)
+  window.addEventListener('DOMContentLoaded', function () {
+    trackEvent('input', {
+      action_key: 'page_view',
+      button_text: document.title
+    });
+    applyDynamicThemeAndBanners();
+    setupLinkInterceptors();
+    injectFloatingWhatsApp();
+  });
+
+  // Track Exits
+  function recordExit() {
+    if (exitRecorded) return;
+    exitRecorded = true;
+    trackEvent('exit', {
+      action_key: 'page_exit',
+      button_text: 'Saída da Página'
+    });
+  }
+
+  window.addEventListener('beforeunload', recordExit);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') {
+      recordExit();
+    }
+  });
+
+  // 4. Dynamic Theme & Banner Engine (Supreme Admin Customizations)
+  function applyDynamicThemeAndBanners() {
+    fetch('/api/config')
+      .then(function (res) { return res.json(); })
+      .then(function (cfg) {
+        if (!cfg) return;
+
+        const primary = cfg.primary_color || '#00A870';
+        const secondary = cfg.secondary_color || '#013644';
+        const accent = cfg.accent_color || '#006B59';
+
+        // Inject / Update dynamic style tag
+        let styleTag = document.getElementById('plantae-dynamic-theme-style');
+        if (!styleTag) {
+          styleTag = document.createElement('style');
+          styleTag.id = 'plantae-dynamic-theme-style';
+          document.head.appendChild(styleTag);
+        }
+
+        styleTag.textContent = `
+          :root {
+            --e-global-color-primary: ${primary} !important;
+            --e-global-color-secondary: ${secondary} !important;
+            --e-global-color-accent: ${accent} !important;
+          }
+          .elementor-button, .elementor-button-link {
+            background-color: ${primary} !important;
+          }
+          .elementor-element .elementor-button:hover {
+            background-color: ${accent} !important;
+          }
+          .p-wa-btn {
+            background: linear-gradient(135deg, ${primary} 0%, ${accent} 100%) !important;
+            box-shadow: 0 4px 20px ${primary}77 !important;
+          }
+          .p-wa-tooltip {
+            background: ${secondary} !important;
+          }
+          ${cfg.banner_slide_1 ? `.elementor-element-3a816aa .elementor-repeater-item-827dc45 .swiper-slide-bg { background-image: url("${cfg.banner_slide_1}") !important; }` : ''}
+          ${cfg.banner_slide_2 ? `.elementor-element-3a816aa .elementor-repeater-item-545cebe .swiper-slide-bg { background-image: url("${cfg.banner_slide_2}") !important; }` : ''}
+          ${cfg.banner_slide_3 ? `.elementor-element-3a816aa .elementor-repeater-item-592bb07 .swiper-slide-bg { background-image: url("${cfg.banner_slide_3}") !important; }` : ''}
+          ${cfg.banner_slide_4 ? `.elementor-element-3a816aa .elementor-repeater-item-8657dfc .swiper-slide-bg { background-image: url("${cfg.banner_slide_4}") !important; }` : ''}
+          ${cfg.banner_mobile ? `.elementor-element-486e352 .elementor-repeater-item-8657dfc .swiper-slide-bg { background-image: url("${cfg.banner_mobile}") !important; }` : ''}
+        `;
+      })
+      .catch(function () {});
+  }
+
+  // 5. Map Elements to Context Action Keys
+  function getActionKeyForElement(el, href, text) {
+    const lowerText = text.toLowerCase();
+    const lowerHref = href.toLowerCase();
+
+    if (lowerText.includes('quero ser um parceiro')) return 'cta_quero_ser_parceiro';
+    if (lowerText.includes('quero ser um cliente')) return 'cta_quero_ser_cliente';
+    if (lowerText.includes('gerente')) return 'cta_falar_gerente';
+    if (lowerText.includes('faça uma simulação') || lowerText.includes('faca uma simulacao')) return 'cta_faca_simulacao';
+    if (lowerText.includes('simular crédito') || lowerText.includes('simule seu')) return 'cta_simular_credito';
+    if (lowerText.includes('consignagro') || lowerHref.includes('consignagro')) return 'cta_consignagro';
+    if (lowerText.includes('seguro') || lowerHref.includes('seguros')) return 'cta_seguros';
+    if (lowerText.includes('crédito rural') || lowerHref.includes('credito-rural')) return 'cta_credito_rural';
+    if (lowerText.includes('atendimento') || lowerText.includes('fale conosco')) return 'cta_atendimento_geral';
+
+    if (lowerHref.includes('lp-whatsapp')) return 'cta_faca_simulacao';
+
+    return 'cta_atendimento_geral';
+  }
+
+  // 6. Intercept CTAs and Route to WhatsApp
+  function setupLinkInterceptors() {
+    document.addEventListener('click', function (e) {
+      const target = e.target.closest('a, button');
+      if (!target) return;
+
+      const href = target.getAttribute('href') || '';
+      const text = (target.textContent || '').trim();
+
+      // Check for Social Media Links
+      if (href.includes('instagram.com')) {
+        trackEvent('output_social', { action_key: 'instagram', button_text: 'Instagram' });
+        return;
+      }
+      if (href.includes('linkedin.com')) {
+        trackEvent('output_social', { action_key: 'linkedin', button_text: 'LinkedIn' });
+        return;
+      }
+      if (href.includes('facebook.com')) {
+        trackEvent('output_social', { action_key: 'facebook', button_text: 'Facebook' });
+        return;
+      }
+
+      // Check for WhatsApp / Conversion CTAs
+      const isConversionCta = 
+        href.includes('lp-whatsapp') ||
+        href.includes('simule-seu-credito') ||
+        href.includes('solicite-seu-credito') ||
+        target.classList.contains('elementor-button') ||
+        /simular|simulaç|crédito|consignagro|seguro|falar com um gerente/i.test(text);
+
+      // Avoid intercepting internal anchors like #content or navigation dropdowns
+      if (href.startsWith('#') && !isConversionCta) return;
+      if (href.includes('softsaaspif') || href.includes('ib.plantaeagrocredito')) return; // Internet Banking / Ouvidoria
+      if (href.includes('politica-de-privacidade') || href.includes('governanca') || href.includes('documentos') || href.includes('correspondentes') || href.includes('na-midia')) return;
+
+      if (isConversionCta) {
+        e.preventDefault();
+        const actionKey = getActionKeyForElement(target, href, text);
+
+        // Track Output Event
+        trackEvent('output_whatsapp', {
+          action_key: actionKey,
+          button_text: text || actionKey
+        });
+
+        // Request Dynamic Context WhatsApp URL
+        const queryParams = new URLSearchParams({
+          action: actionKey,
+          btn: text.substring(0, 50),
+          utm_source: utmSource,
+          utm_medium: utmMedium,
+          utm_campaign: utmCampaign,
+          sid: sessionId
+        });
+
+        fetch('/r/whatsapp?' + queryParams.toString(), {
+          headers: { 'Accept': 'application/json' }
+        })
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (data && data.redirect_url) {
+              window.open(data.redirect_url, '_blank');
+            } else {
+              window.open('https://wa.me/5511999999999', '_blank');
+            }
+          })
+          .catch(function () {
+            window.open('https://wa.me/5511999999999', '_blank');
+          });
+      }
+    }, true);
+  }
+
+  // 7. Modern Floating WhatsApp Button
+  function injectFloatingWhatsApp() {
+    if (document.getElementById('plantae-wa-float')) return;
+
+    const floatBtn = document.createElement('div');
+    floatBtn.id = 'plantae-wa-float';
+    floatBtn.innerHTML = `
+      <div class="p-wa-tooltip">
+        <span>Simular Crédito Rural 🌾</span>
+      </div>
+      <button class="p-wa-btn" aria-label="Falar no WhatsApp" title="Falar no WhatsApp">
+        <svg viewBox="0 0 32 32" width="34" height="34" fill="#ffffff">
+          <path d="M16 2C8.28 2 2 8.28 2 16c0 2.58.7 5.04 2.03 7.18L2 30l7.04-1.99C11.12 29.28 13.52 30 16 30c7.72 0 14-6.28 14-14S23.72 2 16 2zm0 25.54c-2.22 0-4.38-.6-6.26-1.74l-.45-.27-4.64 1.31 1.33-4.52-.29-.47A11.45 11.45 0 014.54 16c0-6.32 5.14-11.46 11.46-11.46s11.46 5.14 11.46 11.46-5.14 11.54-11.46 11.54zm6.29-8.63c-.34-.17-2.04-1.01-2.36-1.12-.32-.12-.55-.17-.78.17-.23.35-.9 1.12-1.1 1.35-.2.23-.41.26-.75.09-.34-.17-1.45-.53-2.76-1.7-1.02-.91-1.71-2.03-1.91-2.37-.2-.35-.02-.53.15-.7.15-.15.35-.41.52-.61.17-.2.23-.35.35-.58.12-.23.06-.44-.03-.61-.09-.17-.78-1.89-1.07-2.58-.28-.68-.57-.59-.78-.6h-.67c-.23 0-.61.09-.93.44-.32.35-1.22 1.2-1.22 2.92s1.25 3.39 1.42 3.62c.17.23 2.45 3.75 5.95 5.25.83.36 1.48.57 1.99.73.84.27 1.6.23 2.2.14.67-.1 2.04-.83 2.33-1.64.29-.81.29-1.5.2-1.64-.08-.15-.31-.23-.65-.4z"/>
+        </svg>
+      </button>
+    `;
+
+    const styles = document.createElement('style');
+    styles.textContent = `
+      #plantae-wa-float {
+        position: fixed;
+        bottom: 26px;
+        right: 26px;
+        z-index: 999999;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-family: 'Open Sans', -apple-system, sans-serif;
+      }
+      .p-wa-btn {
+        width: 62px;
+        height: 62px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #00A870 0%, #008f5d 100%);
+        border: none;
+        box-shadow: 0 4px 20px rgba(0, 168, 112, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        animation: p-pulse 2.5s infinite;
+      }
+      .p-wa-btn:hover {
+        transform: scale(1.12);
+        box-shadow: 0 8px 25px rgba(0, 168, 112, 0.65);
+      }
+      .p-wa-tooltip {
+        background: #013644;
+        color: #ffffff;
+        padding: 8px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(1, 54, 68, 0.3);
+        white-space: nowrap;
+        pointer-events: none;
+        animation: p-float 3s ease-in-out infinite;
+      }
+      @keyframes p-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(0, 168, 112, 0.6); }
+        70% { box-shadow: 0 0 0 16px rgba(0, 168, 112, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(0, 168, 112, 0); }
+      }
+      @keyframes p-float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-4px); }
+      }
+      @media (max-width: 768px) {
+        #plantae-wa-float { bottom: 18px; right: 18px; }
+        .p-wa-tooltip { display: none; }
+        .p-wa-btn { width: 56px; height: 56px; }
+      }
+    `;
+
+    document.head.appendChild(styles);
+    document.body.appendChild(floatBtn);
+
+    floatBtn.querySelector('.p-wa-btn').addEventListener('click', function () {
+      trackEvent('output_whatsapp', {
+        action_key: 'cta_whatsapp_flutuante',
+        button_text: 'Botão Flutuante WhatsApp'
+      });
+
+      const queryParams = new URLSearchParams({
+        action: 'cta_whatsapp_flutuante',
+        btn: 'WhatsApp Flutuante',
+        utm_source: utmSource,
+        utm_medium: utmMedium,
+        utm_campaign: utmCampaign,
+        sid: sessionId
+      });
+
+      fetch('/r/whatsapp?' + queryParams.toString(), {
+        headers: { 'Accept': 'application/json' }
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data && data.redirect_url) {
+            window.open(data.redirect_url, '_blank');
+          } else {
+            window.open('https://wa.me/5511999999999', '_blank');
+          }
+        })
+        .catch(function () {
+          window.open('https://wa.me/5511999999999', '_blank');
+        });
+    });
+  }
+})();

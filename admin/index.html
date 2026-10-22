@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plantae Agrocrédito — Painel Supreme Admin</title>
+  <link rel="icon" href="/images/fav-pl.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+
+  <!-- Modern Supreme Admin Navigation Bar -->
+  <nav class="admin-navbar">
+    <div class="navbar-inner">
+      <a href="javascript:void(0)" class="brand-group">
+        <div class="brand-logo-wrap">
+          <svg viewBox="0 0 24 24" class="svg-icon lg"><path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A4.49 4.49 0 008 20C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z"/></svg>
+        </div>
+        <div class="brand-text">
+          <h1>
+            Plantae Agrocrédito 
+            <span class="brand-badge">
+              <svg viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>
+              Supreme Admin
+            </span>
+          </h1>
+          <p>Painel Inteligente de Tráfego, Cores & Conversão</p>
+        </div>
+      </a>
+
+      <!-- Pure SVG Vector Navigation Tabs -->
+      <div class="nav-tabs">
+        <button class="nav-tab-btn active" onclick="switchTab('dashboard')">
+          <span class="v-badge-icon emerald">
+            <svg viewBox="0 0 24 24" class="svg-icon"><path d="M4 19h16v2H4v-2zm2-4h3V5H6v10zm5 0h3V9h-3v6zm5 0h3V2h-3v13z"/></svg>
+          </span>
+          <span>Dashboard & Métricas</span>
+        </button>
+        <button class="nav-tab-btn" onclick="switchTab('appearance')">
+          <span class="v-badge-icon gold">
+            <svg viewBox="0 0 24 24" class="svg-icon"><path d="M12 2C6.49 2 2 6.49 2 12c0 5.51 4.49 10 10 10a2.5 2.5 0 002.5-2.5c0-.61-.23-1.16-.6-1.59-.38-.43-.6-1-.6-1.61 0-1.38 1.12-2.5 2.5-2.5H17c2.76 0 5-2.24 5-5 0-4.96-4.49-8.8-10-8.8zm-5.5 8c-.83 0-1.5-.67-1.5-1.5S5.67 7 6.5 7 8 7.67 8 8.5 7.33 10 6.5 10zm3-4c-.83 0-1.5-.67-1.5-1.5S8.67 3 9.5 3s1.5.67 1.5 1.5S10.33 6 9.5 6zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 3 14.5 3s1.5.67 1.5 1.5S15.33 6 14.5 6zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 7 17.5 7s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+          </span>
+          <span>Cores & Banners</span>
+        </button>
+        <button class="nav-tab-btn" onclick="switchTab('whatsapp')">
+          <span class="v-badge-icon blue">
+            <svg viewBox="0 0 24 24" class="svg-icon"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0012.04 2zm0 18.12c-1.49 0-2.95-.4-4.22-1.16l-.3-.18-3.13.82.84-3.05-.2-.31a8.16 8.16 0 01-1.25-4.33c0-4.51 3.67-8.18 8.18-8.18 2.19 0 4.24.85 5.79 2.4a8.13 8.13 0 012.39 5.78c.01 4.52-3.66 8.21-8.2 8.21zm4.49-6.14c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.65.81-.8 1-.15.15-.3.17-.55.04-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.15-.25-.02-.38.11-.5.11-.11.25-.29.37-.44.12-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.56-1.36-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.6.12.17 1.77 2.71 4.3 3.8.6.26 1.07.41 1.44.53.61.19 1.16.17 1.6.1.49-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.07-.1-.23-.17-.48-.29z"/></svg>
+          </span>
+          <span>WhatsApp & Rotas</span>
+        </button>
+        <button class="nav-tab-btn" onclick="switchTab('messages')">
+          <span class="v-badge-icon purple">
+            <svg viewBox="0 0 24 24" class="svg-icon"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+          </span>
+          <span>Mensagens de Abordagem</span>
+        </button>
+        <button class="nav-tab-btn" onclick="switchTab('leads')">
+          <span class="v-badge-icon emerald">
+            <svg viewBox="0 0 24 24" class="svg-icon"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+          </span>
+          <span>Leads Validados</span>
+        </button>
+      </div>
+
+      <!-- Quick Action Controls -->
+      <div class="nav-actions">
+        <div class="crypto-pulse" title="Painel e rotas protegidos por Criptografia AES-256-GCM">
+          <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+          <span>AES-256</span>
+        </div>
+        <div class="live-pulse">
+          <span class="pulse-dot"></span>
+          <span>Live Tracking</span>
+        </div>
+        <a href="/" target="_blank" class="btn-action btn-secondary" title="Visualizar Landing Page">
+          <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+          <span>Ver Site</span>
+        </a>
+        <button onclick="saveAllSettings()" class="btn-action btn-primary" title="Salvar todas as alterações">
+          <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15C12.93 17.55 11 21 11 21z"/></svg>
+          <span>Salvar Tudo</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content Area -->
+  <main class="admin-main">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: DASHBOARD & MÉTRICAS (ENTRADAS / SAÍDAS / WHATSAPP) -->
+    <!-- ========================================== -->
+    <div id="tab-dashboard" class="tab-pane active">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="v-badge-icon lg emerald">
+            <svg viewBox="0 0 24 24" class="svg-icon xl"><path d="M4 19h16v2H4v-2zm2-4h3V5H6v10zm5 0h3V9h-3v6zm5 0h3V2h-3v13z"/></svg>
+          </span>
+          <div>
+            <h2>Dashboard Executivo de Tráfego & Leads</h2>
+            <p>Métricas precisas de entradas, saídas, retenção e conversão em tempo real</p>
+          </div>
+        </div>
+        <div class="flex-gap-8">
+          <select id="timeframe-select" onchange="loadMetrics()" class="hex-input select-pad" title="Selecionar período de análise" aria-label="Selecionar período de análise">
+            <option value="24">Últimas 24 Horas</option>
+            <option value="168">Últimos 7 Dias</option>
+            <option value="720">Últimos 30 Dias</option>
+          </select>
+          <button onclick="clearTestMetrics()" class="btn-action btn-secondary" title="Zerar dados de testes simulados e manter apenas acessos reais">
+            <svg viewBox="0 0 24 24" class="svg-icon sm text-gold"><path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z"/></svg>
+            <span>Limpar Testes</span>
+          </button>
+          <button onclick="loadMetrics()" class="btn-action btn-secondary">
+            <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+            <span>Atualizar</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+        <div class="glass-card kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-label">Entradas de Usuários (Visitas)</span>
+            <span class="v-badge-icon blue">
+              <svg viewBox="0 0 24 24" class="svg-icon"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+            </span>
+          </div>
+          <div class="kpi-value-row">
+            <div id="kpi-inputs" class="kpi-value">0</div>
+            <span class="badge-pct">100% Tráfego</span>
+          </div>
+          <div class="kpi-sub"><span id="kpi-unique-inputs">0</span> visitantes únicos registrados</div>
+        </div>
+
+        <div class="glass-card kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-label">Saídas Registradas (Exits)</span>
+            <span class="v-badge-icon gold">
+              <svg viewBox="0 0 24 24" class="svg-icon"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+            </span>
+          </div>
+          <div class="kpi-value-row">
+            <div id="kpi-exits" class="kpi-value">0</div>
+            <span id="kpi-bounce-rate" class="badge-pct badge-gold">0% Rejeição</span>
+          </div>
+          <div class="kpi-sub">Tempo médio de navegação: <strong id="kpi-avg-duration">0s</strong></div>
+        </div>
+
+        <div class="glass-card kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-label">Interações WhatsApp (Leads)</span>
+            <span class="v-badge-icon emerald">
+              <svg viewBox="0 0 24 24" class="svg-icon"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0012.04 2zm0 18.12c-1.49 0-2.95-.4-4.22-1.16l-.3-.18-3.13.82.84-3.05-.2-.31a8.16 8.16 0 01-1.25-4.33c0-4.51 3.67-8.18 8.18-8.18 2.19 0 4.24.85 5.79 2.4a8.13 8.13 0 012.39 5.78c.01 4.52-3.66 8.21-8.2 8.21zm4.49-6.14c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.65.81-.8 1-.15.15-.3.17-.55.04-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.15-.25-.02-.38.11-.5.11-.11.25-.29.37-.44.12-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.56-1.36-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.6.12.17 1.77 2.71 4.3 3.8.6.26 1.07.41 1.44.53.61.19 1.16.17 1.6.1.49-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.07-.1-.23-.17-.48-.29z"/></svg>
+            </span>
+          </div>
+          <div class="kpi-value-row">
+            <div id="kpi-whatsapp" class="kpi-value text-emerald">0</div>
+            <span id="kpi-conv-rate" class="badge-pct">0.00% Conv.</span>
+          </div>
+          <div class="kpi-sub"><span id="kpi-unique-whatsapp">0</span> pessoas iniciaram conversa no WhatsApp</div>
+        </div>
+
+        <div class="glass-card kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-label">Taxa de Conversão Global</span>
+            <span class="v-badge-icon purple">
+              <svg viewBox="0 0 24 24" class="svg-icon"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg>
+            </span>
+          </div>
+          <div class="kpi-value-row">
+            <div id="kpi-global-conv" class="kpi-value text-purple">0.00%</div>
+            <span class="badge-pct badge-purple">Alta Eficácia</span>
+          </div>
+          <div class="kpi-sub">Soma de conversões WhatsApp + Redes Sociais</div>
+        </div>
+      </div>
+
+      <!-- Dashboard Two-Col Detail -->
+      <div class="dash-two-col">
+        <!-- CTAs Breakdown -->
+        <div class="glass-card">
+          <div class="section-title mb-20">
+            <span class="v-badge-icon emerald">
+              <svg viewBox="0 0 24 24" class="svg-icon"><path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+            </span>
+            <div>
+              <h3>Desempenho dos Botões de Abordagem (CTAs)</h3>
+              <p>Quais pontos de contato geram mais leads qualificados</p>
+            </div>
+          </div>
+          <div id="cta-breakdown-list">
+            <p class="text-dim">Carregando métricas de botões...</p>
+          </div>
+        </div>
+
+        <!-- Devices & Sources -->
+        <div class="glass-card">
+          <div class="section-title mb-20">
+            <span class="v-badge-icon blue">
+              <svg viewBox="0 0 24 24" class="svg-icon"><path d="M4 6h16v10H4V6zm18 12H2v2h20v-2zM17 2H7c-1.1 0-2 .9-2 2v1h14V4c0-1.1-.9-2-2-2z"/></svg>
+            </span>
+            <div>
+              <h3>Dispositivos & Origens</h3>
+              <p>Perfil de acesso e canais de entrada</p>
+            </div>
+          </div>
+          <div id="device-breakdown-list" class="mb-24">
+          </div>
+          <div class="section-title mb-14">
+            <span class="v-badge-icon gold">
+              <svg viewBox="0 0 24 24" class="svg-icon"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+            </span>
+            <div>
+              <h4 class="font-14">Top Fontes de Tráfego</h4>
+            </div>
+          </div>
+          <div id="sources-breakdown-list">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: CORES & BANNERS (SUPREME ADMIN CUSTOMIZATION) -->
+    <!-- ========================================== -->
+    <div id="tab-appearance" class="tab-pane">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="v-badge-icon lg gold">
+            <svg viewBox="0 0 24 24" class="svg-icon xl"><path d="M12 2C6.49 2 2 6.49 2 12c0 5.51 4.49 10 10 10a2.5 2.5 0 002.5-2.5c0-.61-.23-1.16-.6-1.59-.38-.43-.6-1-.6-1.61 0-1.38 1.12-2.5 2.5-2.5H17c2.76 0 5-2.24 5-5 0-4.96-4.49-8.8-10-8.8zm-5.5 8c-.83 0-1.5-.67-1.5-1.5S5.67 7 6.5 7 8 7.67 8 8.5 7.33 10 6.5 10zm3-4c-.83 0-1.5-.67-1.5-1.5S8.67 3 9.5 3s1.5.67 1.5 1.5S10.33 6 9.5 6zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 3 14.5 3s1.5.67 1.5 1.5S15.33 6 14.5 6zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 7 17.5 7s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+          </span>
+          <div>
+            <h2>Cores Primárias & Banners da Landing Page</h2>
+            <p>Altere a identidade visual e banners do Hero em tempo real com pré-visualização instantânea</p>
+          </div>
+        </div>
+        <button onclick="saveAppearanceSettings()" class="btn-action btn-primary">
+          <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM10 17l-3.5-3.5 1.41-1.41L10 14.17l5.59-5.59L17 10l-7 7z"/></svg>
+          <span>Aplicar Cores & Banners</span>
+        </button>
+      </div>
+
+      <div class="theme-grid">
+        <!-- Color Pickers Card -->
+        <div class="glass-card">
+          <div class="section-title mb-20">
+            <span class="v-badge-icon emerald">
+              <svg viewBox="0 0 24 24" class="svg-icon"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.22 19.58 10.57 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+            </span>
+            <div>
+              <h3>Paleta de Cores do Sistema</h3>
+              <p>Ajuste os tons primários, secundários e de destaque</p>
+            </div>
+          </div>
+
+          <div class="color-picker-item">
+            <div class="color-picker-label">
+              <strong>Cor Primária Principal</strong>
+              <span>Botões principais, destaques, ícones e WhatsApp flutuante</span>
+            </div>
+            <div class="color-picker-ctrl">
+              <input type="color" id="primary-color-picker" class="color-input-native" value="#00A870" oninput="syncColor('primary', this.value)" title="Seletor de Cor Primária" aria-label="Seletor de Cor Primária">
+              <input type="text" id="primary-color-hex" class="hex-input" value="#00A870" oninput="syncColor('primary', this.value)" placeholder="#00A870" title="Código Hexadecimal Cor Primária" aria-label="Código Hexadecimal Cor Primária">
+            </div>
+          </div>
+
+          <div class="color-picker-item">
+            <div class="color-picker-label">
+              <strong>Cor Secundária (Fundo / Header)</strong>
+              <span>Fundos profundos, rodapés e tooltips</span>
+            </div>
+            <div class="color-picker-ctrl">
+              <input type="color" id="secondary-color-picker" class="color-input-native" value="#013644" oninput="syncColor('secondary', this.value)" title="Seletor de Cor Secundária" aria-label="Seletor de Cor Secundária">
+              <input type="text" id="secondary-color-hex" class="hex-input" value="#013644" oninput="syncColor('secondary', this.value)" placeholder="#013644" title="Código Hexadecimal Cor Secundária" aria-label="Código Hexadecimal Cor Secundária">
+            </div>
+          </div>
+
+          <div class="color-picker-item">
+            <div class="color-picker-label">
+              <strong>Cor de Destaque / Hover</strong>
+              <span>Efeitos de hover, bordas ativas e botões de apoio</span>
+            </div>
+            <div class="color-picker-ctrl">
+              <input type="color" id="accent-color-picker" class="color-input-native" value="#006B59" oninput="syncColor('accent', this.value)" title="Seletor de Cor de Destaque" aria-label="Seletor de Cor de Destaque">
+              <input type="text" id="accent-color-hex" class="hex-input" value="#006B59" oninput="syncColor('accent', this.value)" placeholder="#006B59" title="Código Hexadecimal Cor de Destaque" aria-label="Código Hexadecimal Cor de Destaque">
+            </div>
+          </div>
+
+          <!-- Color Presets -->
+          <div class="mt-20">
+            <span class="font-12 bold-700 text-muted">Presets Rápidos:</span>
+            <div class="flex-gap-8 mt-8 flex-wrap">
+              <button onclick="applyPreset('#00A870', '#013644', '#006B59')" class="btn-preset" title="Aplicar Plantae Original">
+                <span class="color-dot dot-plantae"></span>
+                <span>Plantae Original</span>
+              </button>
+              <button onclick="applyPreset('#10b981', '#064e3b', '#047857')" class="btn-preset" title="Aplicar Esmeralda Puro">
+                <span class="color-dot dot-emerald"></span>
+                <span>Esmeralda Puro</span>
+              </button>
+              <button onclick="applyPreset('#f59e0b', '#451a03', '#b45309')" class="btn-preset" title="Aplicar Safra Dourada">
+                <span class="color-dot dot-gold"></span>
+                <span>Safra Dourada</span>
+              </button>
+              <button onclick="applyPreset('#2563eb', '#0f172a', '#1d4ed8')" class="btn-preset" title="Aplicar Azul AgroTech">
+                <span class="color-dot dot-blue"></span>
+                <span>Azul AgroTech</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Preview Card -->
+        <div class="glass-card">
+          <div class="section-title mb-20">
+            <span class="v-badge-icon gold">
+              <svg viewBox="0 0 24 24" class="svg-icon"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </span>
+            <div>
+              <h3>Pré-visualização ao Vivo</h3>
+              <p>Simulação imediata de como a landing page responderá</p>
+            </div>
+          </div>
+
+          <div class="live-preview-box" id="preview-box">
+            <div class="flex-between">
+              <span id="preview-badge" class="badge-pct">
+                <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                Simulação de Crédito
+              </span>
+              <span class="font-12 text-dim">Exemplo de Header</span>
+            </div>
+            <h4 class="font-18 bold-800">Crédito Rural Ágil para o seu Agronegócio</h4>
+            <p class="font-13 text-muted">Taxas competitivas, prazos sob medida para sua colheita e atendimento especializado.</p>
+            
+            <div class="flex-gap-12 flex-wrap mt-8">
+              <button id="preview-btn-main" class="preview-btn">
+                <svg viewBox="0 0 24 24" class="svg-icon"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                <span>SIMULAR CRÉDITO</span>
+              </button>
+              <button id="preview-btn-sub" class="preview-btn preview-sub-btn">
+                <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                <span>Fale Conosco</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Banners Manager -->
+      <div class="glass-card">
+        <div class="section-title mb-12">
+          <span class="v-badge-icon lg blue">
+            <svg viewBox="0 0 24 24" class="svg-icon xl"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+          </span>
+          <div>
+            <h3>Gerenciador de Banners & Slides do Hero</h3>
+            <p>Substitua qualquer imagem do carrossel principal da página inicial</p>
+          </div>
+        </div>
+
+        <div class="banner-grid">
+          <!-- Slide 1 -->
+          <div class="banner-card">
+            <h4>
+              <span class="slide-badge-num emerald">1</span> 
+              <span>Slide 1 (Hero Principal)</span>
+            </h4>
+            <img id="img-preview-1" src="/images/hero-1.png" alt="Slide 1" class="banner-preview-img" loading="lazy" decoding="async">
+            <div class="file-upload-wrap">
+              <input type="text" id="banner-input-1" class="input-text" value="images/hero-1.png" onchange="updateBannerPreview(1, this.value)" placeholder="images/hero-1.png" title="Caminho do Banner Slide 1" aria-label="Caminho do Banner Slide 1">
+              <label class="btn-file-select">
+                <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
+                <span>Upload</span>
+                <input type="file" accept="image/*" onchange="handleImageUpload(1, this)" title="Upload de imagem para o Slide 1" aria-label="Upload de imagem para o Slide 1">
+              </label>
+            </div>
+          </div>
+
+          <!-- Slide 2 -->
+          <div class="banner-card">
+            <h4>
+              <span class="slide-badge-num emerald">2</span>
+              <span>Slide 2 (Crédito & Safra)</span>
+            </h4>
+            <img id="img-preview-2" src="/images/hero-2.png" alt="Slide 2" class="banner-preview-img" loading="lazy" decoding="async">
+            <div class="file-upload-wrap">
+              <input type="text" id="banner-input-2" class="input-text" value="images/hero-2.png" onchange="updateBannerPreview(2, this.value)" placeholder="images/hero-2.png" title="Caminho do Banner Slide 2" aria-label="Caminho do Banner Slide 2">
+              <label class="btn-file-select">
+                <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
+                <span>Upload</span>
+                <input type="file" accept="image/*" onchange="handleImageUpload(2, this)" title="Upload de imagem para o Slide 2" aria-label="Upload de imagem para o Slide 2">
+              </label>
+            </div>
+          </div>
+
+          <!-- Slide 3 -->
+          <div class="banner-card">
+            <h4>
+              <span class="slide-badge-num emerald">3</span>
+              <span>Slide 3 (ConsignAgro)</span>
+            </h4>
+            <img id="img-preview-3" src="/images/hero-3.png" alt="Slide 3" class="banner-preview-img" loading="lazy" decoding="async">
+            <div class="file-upload-wrap">
+              <input type="text" id="banner-input-3" class="input-text" value="images/hero-3.png" onchange="updateBannerPreview(3, this.value)" placeholder="images/hero-3.png" title="Caminho do Banner Slide 3" aria-label="Caminho do Banner Slide 3">
+              <label class="btn-file-select">
+                <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
+                <span>Upload</span>
+                <input type="file" accept="image/*" onchange="handleImageUpload(3, this)" title="Upload de imagem para o Slide 3" aria-label="Upload de imagem para o Slide 3">
+              </label>
+            </div>
+          </div>
+
+          <!-- Slide 4 -->
+          <div class="banner-card">
+            <h4>
+              <span class="slide-badge-num emerald">4</span>
+              <span>Slide 4 (Parceria Davi)</span>
+            </h4>
+            <img id="img-preview-4" src="/images/banner-davi.jpg" alt="Slide 4" class="banner-preview-img" loading="lazy" decoding="async">
+            <div class="file-upload-wrap">
+              <input type="text" id="banner-input-4" class="input-text" value="images/banner-davi.jpg" onchange="updateBannerPreview(4, this.value)" placeholder="images/banner-davi.jpg" title="Caminho do Banner Slide 4" aria-label="Caminho do Banner Slide 4">
+              <label class="btn-file-select">
+                <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
+                <span>Upload</span>
+                <input type="file" accept="image/*" onchange="handleImageUpload(4, this)" title="Upload de imagem para o Slide 4" aria-label="Upload de imagem para o Slide 4">
+              </label>
+            </div>
+          </div>
+
+          <!-- Mobile Hero -->
+          <div class="banner-card">
+            <h4>
+              <span class="slide-badge-num blue">M</span>
+              <span>Banner Hero Mobile</span>
+            </h4>
+            <img id="img-preview-mb" src="/images/plantae-hero-1-mb.png" alt="Banner Mobile" class="banner-preview-img" loading="lazy" decoding="async">
+            <div class="file-upload-wrap">
+              <input type="text" id="banner-input-mb" class="input-text" value="images/plantae-hero-1-mb.png" onchange="updateBannerPreview('mb', this.value)" placeholder="images/plantae-hero-1-mb.png" title="Caminho do Banner Mobile" aria-label="Caminho do Banner Mobile">
+              <label class="btn-file-select">
+                <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
+                <span>Upload</span>
+                <input type="file" accept="image/*" onchange="handleImageUpload('mb', this)" title="Upload de imagem para o Banner Mobile" aria-label="Upload de imagem para o Banner Mobile">
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: WHATSAPP & ROTAS -->
+    <!-- ========================================== -->
+    <div id="tab-whatsapp" class="tab-pane">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="v-badge-icon lg blue">
+            <svg viewBox="0 0 24 24" class="svg-icon xl"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0012.04 2zm0 18.12c-1.49 0-2.95-.4-4.22-1.16l-.3-.18-3.13.82.84-3.05-.2-.31a8.16 8.16 0 01-1.25-4.33c0-4.51 3.67-8.18 8.18-8.18 2.19 0 4.24.85 5.79 2.4a8.13 8.13 0 012.39 5.78c.01 4.52-3.66 8.21-8.2 8.21zm4.49-6.14c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.65.81-.8 1-.15.15-.3.17-.55.04-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.15-.25-.02-.38.11-.5.11-.11.25-.29.37-.44.12-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.56-1.36-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.6.12.17 1.77 2.71 4.3 3.8.6.26 1.07.41 1.44.53.61.19 1.16.17 1.6.1.49-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.07-.1-.23-.17-.48-.29z"/></svg>
+          </span>
+          <div>
+            <h2>Configurações do Roteador WhatsApp</h2>
+            <p>Gerencie o número receptor, alertas do bot e testes diretos de conversão</p>
+          </div>
+        </div>
+        <button onclick="saveWhatsAppConfig()" class="btn-action btn-primary">
+          <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM10 17l-3.5-3.5 1.41-1.41L10 14.17l5.59-5.59L17 10l-7 7z"/></svg>
+          <span>Salvar WhatsApp</span>
+        </button>
+      </div>
+
+      <div class="theme-grid">
+        <div class="glass-card">
+          <h3 class="font-16 mb-16">Número Principal de Atendimento</h3>
+          
+          <div class="mb-20">
+            <label class="font-13 bold-600 text-muted mb-6">WhatsApp Receptor (DDI + DDD + Número)</label>
+            <input type="text" id="wa-number-input" class="input-text font-15 bold-700 w-full" placeholder="Ex: 5511999999999" title="Número do WhatsApp Receptor" aria-label="Número do WhatsApp Receptor">
+            <span class="font-12 text-dim mt-4">Todos os cliques em CTAs da página serão encaminhados para este número com a mensagem contextual correspondente.</span>
+          </div>
+
+          <div class="mb-20">
+            <label class="label-flex">
+              <input type="checkbox" id="wa-redirects-active" class="custom-checkbox" title="Ativar redirecionamento automático" aria-label="Ativar redirecionamento automático">
+              <span>Redirecionamento Automático Ativo</span>
+            </label>
+            <span class="font-12 text-dim ml-28">Quando desativado, os visitantes verão a tela informativa sem envio automático para o WhatsApp.</span>
+          </div>
+
+          <div class="mb-20">
+            <label class="label-flex">
+              <input type="checkbox" id="wa-bot-alerts" class="custom-checkbox" title="Ativar notificações no Telegram" aria-label="Ativar notificações no Telegram">
+              <span>Notificações Instantâneas no Telegram</span>
+            </label>
+            <span class="font-12 text-dim ml-28">O Bot do Telegram enviará um card detalhado a cada novo lead que clicar em qualquer botão.</span>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h3 class="font-16 mb-16">Simulador & Validador de Link</h3>
+          <p class="font-13 text-muted mb-16">Gere e teste o link direto de conversão para validar o funcionamento antes de campanhas.</p>
+
+          <div class="p-16 dark-box mb-16">
+            <div class="font-12 text-dim mb-6">URL de Redirecionamento Gerada:</div>
+            <code id="wa-preview-url" class="code-preview">https://wa.me/5511999999999</code>
+          </div>
+
+          <button onclick="testWhatsAppClick()" class="btn-action btn-secondary btn-full-center">
+            <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M19 19L14 9V4h1V2H9v2h1v5L5 19c-1.1 1.7-.1 3 1.8 3h10.4c1.9 0 2.9-1.3 1.8-3zm-7-9.5l4 7.5H8l4-7.5z"/></svg>
+            <span>Testar Disparo de Lead no WhatsApp</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: MENSAGENS DE ABORDAGEM CONTEXTUAIS -->
+    <!-- ========================================== -->
+    <div id="tab-messages" class="tab-pane">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="v-badge-icon lg purple">
+            <svg viewBox="0 0 24 24" class="svg-icon xl"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+          </span>
+          <div>
+            <h2>Mensagens de Abordagem por CTA</h2>
+            <p>Personalize as mensagens contextuais pré-preenchidas para cada um dos 10 botões do site</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div id="context-messages-container" class="msg-list">
+          <p class="text-dim">Carregando mensagens de abordagem...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 5: LEADS VALIDADOS & HISTÓRICO -->
+    <!-- ========================================== -->
+    <div id="tab-leads" class="tab-pane">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="v-badge-icon lg emerald">
+            <svg viewBox="0 0 24 24" class="svg-icon xl"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+          </span>
+          <div>
+            <h2>Histórico de Leads & Auditoria de Sessões</h2>
+            <p>Informações aprofundadas, validadas e em tempo real sobre cada lead e visitante</p>
+          </div>
+        </div>
+        <div class="flex-gap-8">
+          <input type="text" id="lead-search-input" oninput="filterLeads(this.value)" class="input-text w-280" placeholder="Buscar por CTA, UTM, IP, dispositivo..." title="Buscar leads" aria-label="Buscar leads">
+          <button onclick="loadMetrics()" class="btn-action btn-secondary">
+            <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+            <span>Atualizar</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="glass-card p-0">
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Status / Qualidade</th>
+                <th>Data & Hora</th>
+                <th>Botão / CTA Clicado</th>
+                <th>Dispositivo / OS</th>
+                <th>Origem / UTM</th>
+                <th>IP / Sessão</th>
+                <th>Mensagem Enviada</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="leads-table-body">
+              <tr>
+                <td colspan="8" class="center-text text-dim p-32">Carregando histórico de leads...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Toast Notification Pop-up -->
+  <div id="toast-msg">
+    <svg viewBox="0 0 24 24" class="svg-icon md text-emerald"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+    <span id="toast-text">Alterações salvas com sucesso!</span>
+  </div>
+
+  <script>
+    // State management
+    let currentConfig = {};
+    let currentMetrics = {};
+    let currentMessages = [];
+
+    // Extract & Persist 7-Digit / Encrypted Auth Token from URL path or query
+    let adminAuthToken = '';
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    // Support direct root token /:code (e.g. /7K9X2PA) or legacy /admin/:code
+    if (pathParts.length >= 1 && pathParts[pathParts.length - 1].length === 7) {
+      adminAuthToken = pathParts[pathParts.length - 1].toUpperCase();
+      localStorage.setItem('plantae_admin_token', adminAuthToken);
+    } else {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('auth')) {
+        adminAuthToken = urlParams.get('auth').trim().toUpperCase();
+        localStorage.setItem('plantae_admin_token', adminAuthToken);
+      }
+    }
+    if (!adminAuthToken) {
+      adminAuthToken = localStorage.getItem('plantae_admin_token') || '';
+    }
+
+    // Authenticated & Encrypted Fetch Wrapper (Zero-Lag)
+    async function authFetch(url, options = {}) {
+      options.headers = options.headers || {};
+      if (adminAuthToken) {
+        options.headers['Authorization'] = 'Bearer ' + adminAuthToken;
+        options.headers['x-admin-token'] = adminAuthToken;
+      }
+      const res = await fetch(url, options);
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem('plantae_admin_token');
+        window.location.href = '/';
+      }
+      return res;
+    }
+
+    // Clear Test Metrics API
+    async function clearTestMetrics() {
+      if (!confirm('Deseja realmente zerar todas as métricas de teste do banco de dados? Isso removerá acessos simulados anteriores para que você acompanhe apenas visitantes reais.')) {
+        return;
+      }
+      try {
+        const res = await authFetch('/api/admin/metrics/clear', { method: 'POST' });
+        const json = await res.json();
+        if (json.success) {
+          showToast('Métricas de teste zeradas com sucesso! Painel limpo.');
+          await loadMetrics();
+        } else {
+          showToast('Erro ao zerar métricas: ' + (json.error || ''), true);
+        }
+      } catch (err) {
+        showToast('Falha na comunicação ao zerar métricas.', true);
+      }
+    }
+
+    // Track loaded tabs for on-demand lazy loading (Eliminates all lag)
+    const loadedTabs = { dashboard: true, appearance: false, whatsapp: false, messages: false, leads: true };
+
+    // Switch Tabs with On-Demand Lazy Loading
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
+
+      const targetPane = document.getElementById('tab-' + tabId);
+      if (targetPane) targetPane.classList.add('active');
+
+      const activeBtn = Array.from(document.querySelectorAll('.nav-tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+      if (activeBtn) activeBtn.classList.add('active');
+
+      // Lazy load tab data on demand - ZERO LAG
+      if ((tabId === 'appearance' || tabId === 'whatsapp') && !loadedTabs.appearance) {
+        loadedTabs.appearance = true;
+        loadConfig();
+      }
+      if (tabId === 'messages' && !loadedTabs.messages) {
+        loadedTabs.messages = true;
+        loadMessages();
+      }
+    }
+
+    // Toast Alert
+    function showToast(text, isError = false) {
+      const toast = document.getElementById('toast-msg');
+      const toastText = document.getElementById('toast-text');
+      toastText.textContent = text;
+      toast.style.borderColor = isError ? '#ef4444' : '#00A870';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    // 1. Load System Configuration
+    async function loadConfig() {
+      try {
+        const res = await authFetch('/api/config');
+        currentConfig = await res.json();
+
+        // Colors
+        const primary = currentConfig.primary_color || '#00A870';
+        const secondary = currentConfig.secondary_color || '#013644';
+        const accent = currentConfig.accent_color || '#006B59';
+
+        syncColor('primary', primary, false);
+        syncColor('secondary', secondary, false);
+        syncColor('accent', accent, false);
+
+        // Banners
+        document.getElementById('banner-input-1').value = currentConfig.banner_slide_1 || 'images/hero-1.png';
+        document.getElementById('img-preview-1').src = '/' + (currentConfig.banner_slide_1 || 'images/hero-1.png');
+
+        document.getElementById('banner-input-2').value = currentConfig.banner_slide_2 || 'images/hero-2.png';
+        document.getElementById('img-preview-2').src = '/' + (currentConfig.banner_slide_2 || 'images/hero-2.png');
+
+        document.getElementById('banner-input-3').value = currentConfig.banner_slide_3 || 'images/hero-3.png';
+        document.getElementById('img-preview-3').src = '/' + (currentConfig.banner_slide_3 || 'images/hero-3.png');
+
+        document.getElementById('banner-input-4').value = currentConfig.banner_slide_4 || 'images/banner-davi.jpg';
+        document.getElementById('img-preview-4').src = '/' + (currentConfig.banner_slide_4 || 'images/banner-davi.jpg');
+
+        document.getElementById('banner-input-mb').value = currentConfig.banner_mobile || 'images/plantae-hero-1-mb.png';
+        document.getElementById('img-preview-mb').src = '/' + (currentConfig.banner_mobile || 'images/plantae-hero-1-mb.png');
+
+        // WhatsApp
+        const waNum = currentConfig.whatsapp_number || '5511999999999';
+        document.getElementById('wa-number-input').value = waNum;
+        document.getElementById('wa-redirects-active').checked = currentConfig.redirects_active !== false;
+        document.getElementById('wa-bot-alerts').checked = currentConfig.bot_alerts_enabled !== false;
+        document.getElementById('wa-preview-url').textContent = `https://wa.me/${waNum}?text=${encodeURIComponent('Olá! Teste de atendimento Plantae Agrocrédito.')}`;
+      } catch (e) {
+        console.error('Error loading config:', e);
+      }
+    }
+
+    // Color Synchronizer
+    function syncColor(type, val, updatePeer = true) {
+      if (!val) return;
+      if (updatePeer) {
+        document.getElementById(`${type}-color-picker`).value = val;
+        document.getElementById(`${type}-color-hex`).value = val;
+      }
+
+      // Update Live Preview Box
+      const primary = document.getElementById('primary-color-hex').value;
+      const secondary = document.getElementById('secondary-color-hex').value;
+      const accent = document.getElementById('accent-color-hex').value;
+
+      const previewBox = document.getElementById('preview-box');
+      const previewBtn = document.getElementById('preview-btn-main');
+      const previewBadge = document.getElementById('preview-badge');
+
+      if (previewBox) previewBox.style.background = `linear-gradient(135deg, ${secondary}33 0%, rgba(0,0,0,0.5) 100%)`;
+      if (previewBtn) previewBtn.style.background = `linear-gradient(135deg, ${primary} 0%, ${accent} 100%)`;
+      if (previewBadge) {
+        previewBadge.style.color = primary;
+        previewBadge.style.background = `${primary}22`;
+        previewBadge.style.borderColor = `${primary}55`;
+      }
+    }
+
+    function applyPreset(p, s, a) {
+      syncColor('primary', p);
+      syncColor('secondary', s);
+      syncColor('accent', a);
+      showToast('Preset de cores selecionado! Clique em Salvar para aplicar.');
+    }
+
+    function updateBannerPreview(id, path) {
+      const img = document.getElementById(`img-preview-${id}`);
+      if (img) img.src = path.startsWith('http') || path.startsWith('/') ? path : '/' + path;
+    }
+
+    // Handle Image Upload directly via base64 API
+    async function handleImageUpload(slideId, inputEl) {
+      const file = inputEl.files && inputEl.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function (e) {
+        const base64Data = e.target.result;
+        try {
+          const res = await authFetch('/api/admin/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              filename: `banner_slide_${slideId}_${Date.now()}.${file.name.split('.').pop()}`,
+              data: base64Data
+            })
+          });
+          const json = await res.json();
+          if (json.success && json.filepath) {
+            document.getElementById(`banner-input-${slideId}`).value = json.filepath;
+            updateBannerPreview(slideId, json.filepath);
+            showToast(`Imagem do Slide ${slideId} carregada com sucesso!`);
+          } else {
+            showToast('Erro no upload da imagem', true);
+          }
+        } catch (err) {
+          showToast('Falha na comunicação ao enviar imagem', true);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Save Appearance
+    async function saveAppearanceSettings() {
+      const payload = {
+        primary_color: document.getElementById('primary-color-hex').value,
+        secondary_color: document.getElementById('secondary-color-hex').value,
+        accent_color: document.getElementById('accent-color-hex').value,
+        banner_slide_1: document.getElementById('banner-input-1').value,
+        banner_slide_2: document.getElementById('banner-input-2').value,
+        banner_slide_3: document.getElementById('banner-input-3').value,
+        banner_slide_4: document.getElementById('banner-input-4').value,
+        banner_mobile: document.getElementById('banner-input-mb').value
+      };
+
+      try {
+        const res = await authFetch('/api/admin/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (json.success) {
+          showToast('Cores & Banners aplicados instantaneamente na Landing Page!');
+        } else {
+          showToast('Erro ao salvar alterações', true);
+        }
+      } catch (err) {
+        showToast('Falha de conexão', true);
+      }
+    }
+
+    // Save WhatsApp
+    async function saveWhatsAppConfig() {
+      const rawNumber = document.getElementById('wa-number-input').value.replace(/\D/g, '');
+      if (!rawNumber) {
+        showToast('Informe um número válido de WhatsApp', true);
+        return;
+      }
+
+      const payload = {
+        whatsapp_number: rawNumber,
+        redirects_active: document.getElementById('wa-redirects-active').checked,
+        bot_alerts_enabled: document.getElementById('wa-bot-alerts').checked
+      };
+
+      try {
+        const res = await authFetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (json.success) {
+          showToast('Configurações do WhatsApp salvas com sucesso!');
+          loadConfig();
+        } else {
+          showToast('Erro ao salvar configurações', true);
+        }
+      } catch (err) {
+        showToast('Falha de conexão', true);
+      }
+    }
+
+    function testWhatsAppClick() {
+      const waNum = document.getElementById('wa-number-input').value.replace(/\D/g, '');
+      const testMsg = encodeURIComponent('Olá! Este é um teste oficial de validação do Supreme Admin da Plantae Agrocrédito.');
+      window.open(`https://wa.me/${waNum}?text=${testMsg}`, '_blank');
+    }
+
+    // Save All
+    async function saveAllSettings() {
+      await saveAppearanceSettings();
+      await saveWhatsAppConfig();
+      showToast('Todas as configurações foram sincronizadas com perfeição!');
+    }
+
+    // 2. Load Real-Time Metrics & Analytics
+    async function loadMetrics() {
+      const hours = document.getElementById('timeframe-select').value;
+      try {
+        const res = await authFetch(`/api/analytics/metrics?hours=${hours}`);
+        currentMetrics = await res.json();
+
+        const s = currentMetrics.summary || {};
+        document.getElementById('kpi-inputs').textContent = Number(s.total_inputs || 0).toLocaleString();
+        document.getElementById('kpi-unique-inputs').textContent = Number(s.unique_inputs || 0).toLocaleString();
+        document.getElementById('kpi-exits').textContent = Number(s.total_exits || 0).toLocaleString();
+        document.getElementById('kpi-avg-duration').textContent = formatDuration(s.avg_duration_seconds || 0);
+        document.getElementById('kpi-bounce-rate').textContent = (s.bounce_rate_percentage || '0.0') + '% Rejeição';
+        document.getElementById('kpi-whatsapp').textContent = Number(s.total_whatsapp_outputs || 0).toLocaleString();
+        document.getElementById('kpi-unique-whatsapp').textContent = Number(s.unique_whatsapp_outputs || 0).toLocaleString();
+        document.getElementById('kpi-conv-rate').textContent = (s.whatsapp_conversion_rate || '0.00') + '% Conv.';
+        document.getElementById('kpi-global-conv').textContent = (s.global_conversion_rate || '0.00') + '%';
+
+        // CTAs List
+        const ctaListEl = document.getElementById('cta-breakdown-list');
+        const ctas = currentMetrics.cta_breakdown || [];
+        if (ctas.length === 0) {
+          ctaListEl.innerHTML = '<p class="text-dim font-13">Nenhum clique registrado no período selecionado.</p>';
+        } else {
+          ctaListEl.innerHTML = '';
+          ctas.forEach(c => {
+            const row = document.createElement('div');
+            row.className = 'metric-row';
+            row.innerHTML = `
+              <div class="metric-meta">
+                <span class="flex-center-gap">
+                  <svg viewBox="0 0 24 24" class="svg-icon sm text-emerald"><path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                  ${escapeHtml(c.button_text)}
+                </span>
+                <span><strong>${c.count}</strong> cliques (${c.percentage}%)</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill emerald"></div>
+              </div>
+            `;
+            row.querySelector('.bar-fill').style.width = c.percentage + '%';
+            ctaListEl.appendChild(row);
+          });
+        }
+
+        // Devices
+        const devListEl = document.getElementById('device-breakdown-list');
+        const devs = currentMetrics.device_stats || {};
+        devListEl.innerHTML = '';
+        Object.entries(devs).forEach(([dev, data]) => {
+          const row = document.createElement('div');
+          row.className = 'metric-row';
+          const isMob = dev === 'Mobile';
+          const iconSvg = isMob 
+            ? '<svg viewBox="0 0 24 24" class="svg-icon sm text-blue"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>'
+            : '<svg viewBox="0 0 24 24" class="svg-icon sm text-emerald"><path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/></svg>';
+          
+          row.innerHTML = `
+            <div class="metric-meta">
+              <span class="flex-center-gap">${iconSvg} ${dev}</span>
+              <span>${data.inputs} visitas (${data.input_percentage}%) • Conv: <strong>${data.conversion_rate}%</strong></span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill ${dev === 'Mobile' ? 'blue' : 'emerald'}"></div>
+            </div>
+          `;
+          row.querySelector('.bar-fill').style.width = data.input_percentage + '%';
+          devListEl.appendChild(row);
+        });
+
+        // Sources
+        const srcListEl = document.getElementById('sources-breakdown-list');
+        const sources = currentMetrics.sources || [];
+        srcListEl.innerHTML = '';
+        sources.slice(0, 5).forEach(src => {
+          const row = document.createElement('div');
+          row.className = 'metric-row mb-10';
+          row.innerHTML = `
+            <div class="metric-meta font-12">
+              <span class="flex-center-gap">
+                <svg viewBox="0 0 24 24" class="svg-icon sm text-gold"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                ${escapeHtml(src.source)}
+              </span>
+              <span>${src.count} (${src.percentage}%)</span>
+            </div>
+            <div class="bar-track h-6">
+              <div class="bar-fill gold"></div>
+            </div>
+          `;
+          row.querySelector('.bar-fill').style.width = src.percentage + '%';
+          srcListEl.appendChild(row);
+        });
+
+        // Leads Table
+        renderLeads(currentMetrics.leads || []);
+
+      } catch (e) {
+        console.error('Error loading metrics:', e);
+      }
+    }
+
+    // Format seconds into minutes/seconds
+    function formatDuration(sec) {
+      if (!sec) return '0s';
+      if (sec < 60) return sec + 's';
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${m}m ${s}s`;
+    }
+
+    // Render Leads Table
+    function renderLeads(leads) {
+      const tbody = document.getElementById('leads-table-body');
+      if (!leads || leads.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="center-text text-dim p-32">Nenhum lead capturado ainda. Acesse o site e clique em um CTA para gerar o primeiro lead!</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = leads.map(l => {
+        const waNum = currentConfig.whatsapp_number || '5511999999999';
+        const waLink = `https://wa.me/${waNum}?text=${encodeURIComponent(l.whatsapp_message || '')}`;
+        return `
+          <tr>
+            <td>
+              <span class="lead-badge">
+                <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+                ${l.quality_label || 'Validado'}
+              </span>
+            </td>
+            <td>
+              <div class="bold-600">${new Date(l.created_at).toLocaleTimeString('pt-BR')}</div>
+              <div class="font-11 text-dim">${new Date(l.created_at).toLocaleDateString('pt-BR')}</div>
+            </td>
+            <td>
+              <strong>${escapeHtml(l.button_text || l.action_key)}</strong>
+              <div class="font-11 code-mono text-dim">${l.action_key}</div>
+            </td>
+            <td>
+              <div>${l.device || 'Desktop'}</div>
+              <div class="font-11 text-dim">${l.browser || ''} • ${l.os || ''}</div>
+            </td>
+            <td>
+              <span class="badge-pct badge-blue font-10">${escapeHtml(l.utm_source || 'Acesso Direto')}</span>
+              ${l.utm_campaign ? `<div class="font-10 text-dim mt-2">Campanha: ${escapeHtml(l.utm_campaign)}</div>` : ''}
+            </td>
+            <td>
+              <div class="code-mono font-11">${l.ip ? l.ip.substring(0, 18) : 'Anônimo'}</div>
+              <div class="font-10 text-dim">Duração: ${formatDuration(l.duration_seconds)}</div>
+            </td>
+            <td class="cell-ellipsis" title="${escapeHtml(l.whatsapp_message || '')}">
+              ${escapeHtml(l.whatsapp_message || 'N/A')}
+            </td>
+            <td>
+              <a href="${waLink}" target="_blank" class="btn-wa-direct">
+                <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0012.04 2zm0 18.12c-1.49 0-2.95-.4-4.22-1.16l-.3-.18-3.13.82.84-3.05-.2-.31a8.16 8.16 0 01-1.25-4.33c0-4.51 3.67-8.18 8.18-8.18 2.19 0 4.24.85 5.79 2.4a8.13 8.13 0 012.39 5.78c.01 4.52-3.66 8.21-8.2 8.21zm4.49-6.14c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.65.81-.8 1-.15.15-.3.17-.55.04-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.15-.25-.02-.38.11-.5.11-.11.25-.29.37-.44.12-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.56-1.36-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.6.12.17 1.77 2.71 4.3 3.8.6.26 1.07.41 1.44.53.61.19 1.16.17 1.6.1.49-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.07-.1-.23-.17-.48-.29z"/></svg>
+                <span>Abrir</span>
+              </a>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Filter Leads
+    function filterLeads(term) {
+      if (!currentMetrics.leads) return;
+      const lower = term.toLowerCase();
+      const filtered = currentMetrics.leads.filter(l => 
+        (l.button_text && l.button_text.toLowerCase().includes(lower)) ||
+        (l.action_key && l.action_key.toLowerCase().includes(lower)) ||
+        (l.utm_source && l.utm_source.toLowerCase().includes(lower)) ||
+        (l.device && l.device.toLowerCase().includes(lower)) ||
+        (l.ip && l.ip.includes(lower))
+      );
+      renderLeads(filtered);
+    }
+
+    // 3. Load Context Messages
+    async function loadMessages() {
+      try {
+        const res = await authFetch('/api/messages');
+        const json = await res.json();
+        currentMessages = json.messages || [];
+
+        const container = document.getElementById('context-messages-container');
+        if (currentMessages.length === 0) {
+          container.innerHTML = '<p class="text-dim">Nenhuma mensagem cadastrada.</p>';
+          return;
+        }
+
+        container.innerHTML = currentMessages.map(m => `
+          <div class="msg-item" id="msg-card-${m.action_key}">
+            <div class="msg-item-header">
+              <h4>
+                <span class="v-badge-icon purple">
+                  <svg viewBox="0 0 24 24" class="svg-icon"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+                </span>
+                <span>${escapeHtml(m.title)}</span>
+              </h4>
+              <span class="msg-action-badge">${m.action_key}</span>
+            </div>
+            <textarea id="msg-text-${m.action_key}" class="msg-textarea" placeholder="Digite a mensagem de abordagem..." title="Mensagem de abordagem para ${escapeHtml(m.title)}" aria-label="Mensagem de abordagem para ${escapeHtml(m.title)}">${escapeHtml(m.current_message)}</textarea>
+            <div class="msg-footer">
+              <span class="font-11 text-dim">Variáveis aceitas: quebras de linha e emojis suportados.</span>
+              <div class="flex-gap-8">
+                <button onclick="resetMessage('${m.action_key}')" class="btn-action btn-secondary btn-sm-pad">
+                  <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
+                  <span>Restaurar Padrão</span>
+                </button>
+                <button onclick="saveMessage('${m.action_key}')" class="btn-action btn-primary btn-sm-pad">
+                  <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM10 17l-3.5-3.5 1.41-1.41L10 14.17l5.59-5.59L17 10l-7 7z"/></svg>
+                  <span>Salvar Mensagem</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        console.error('Error loading messages:', e);
+      }
+    }
+
+    // Save individual message
+    async function saveMessage(actionKey) {
+      const text = document.getElementById(`msg-text-${actionKey}`).value;
+      try {
+        const res = await authFetch(`/api/messages/${actionKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+        const json = await res.json();
+        if (json.success) {
+          showToast(`Mensagem para ${actionKey} atualizada!`);
+        } else {
+          showToast('Erro ao atualizar mensagem', true);
+        }
+      } catch (e) {
+        showToast('Falha de conexão', true);
+      }
+    }
+
+    // Reset message
+    async function resetMessage(actionKey) {
+      if (!confirm('Deseja restaurar esta mensagem para o padrão original da Plantae?')) return;
+      try {
+        const res = await authFetch(`/api/messages/${actionKey}/reset`, { method: 'POST' });
+        const json = await res.json();
+        if (json.success) {
+          showToast('Mensagem restaurada com sucesso!');
+          loadMessages();
+        }
+      } catch (e) {
+        showToast('Erro ao restaurar', true);
+      }
+    }
+
+    // Helper HTML Escape
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Init on Page Load (Ultra-Fast: Only load active Dashboard tab)
+    document.addEventListener('DOMContentLoaded', () => {
+      loadMetrics();
+
+      // Poll real-time metrics every 30 seconds for low resource usage
+      setInterval(loadMetrics, 30000);
+    });
+  </script>
+</body>
+</html>

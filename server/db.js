@@ -1,0 +1,251 @@
+/**
+ * Plantae Agrocrédito - Database Engine
+ * Uses Node.js 24 native SQLite (DatabaseSync)
+ */
+const { DatabaseSync } = require('node:sqlite');
+const path = require('node:path');
+const fs = require('node:fs');
+
+// Ensure data directory exists
+const dataDir = path.join(__dirname, '..', 'data');
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+
+const dbPath = path.join(dataDir, 'tracker.db');
+const db = new DatabaseSync(dbPath);
+
+// Initialize Tables & Performance Optimizations
+db.exec(`
+  PRAGMA journal_mode = WAL;
+  PRAGMA synchronous = NORMAL;
+
+  CREATE TABLE IF NOT EXISTS events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type TEXT NOT NULL,
+    session_id TEXT,
+    action_key TEXT,
+    button_text TEXT,
+    referrer TEXT,
+    utm_source TEXT,
+    utm_medium TEXT,
+    utm_campaign TEXT,
+    device TEXT,
+    browser TEXT,
+    os TEXT,
+    ip TEXT,
+    whatsapp_message TEXT,
+    duration_seconds INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_events_type_created ON events(type, created_at);
+  CREATE INDEX IF NOT EXISTS idx_events_session ON events(session_id);
+
+  CREATE TABLE IF NOT EXISTS admin_tokens (
+    token TEXT PRIMARY KEY,
+    created_at INTEGER NOT NULL,
+    expires_at INTEGER NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS config (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS context_messages (
+    action_key TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    default_message TEXT NOT NULL,
+    current_message TEXT NOT NULL,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+`);
+
+// Safe column addition for existing db
+try {
+  db.exec(`ALTER TABLE events ADD COLUMN duration_seconds INTEGER DEFAULT 0;`);
+} catch (e) {
+  // column already exists
+}
+
+// Seed initial default configurations if not present
+const getCfgStmt = db.prepare('SELECT value FROM config WHERE key = ?');
+const setCfgStmt = db.prepare('INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)');
+
+const defaultConfigs = {
+  whatsapp_number: '5511999999999',
+  bot_alerts_enabled: '1',
+  redirects_active: '1',
+  telegram_admin_id: process.env.TELEGRAM_ADMIN_CHAT_ID || '',
+  primary_color: '#00A870',
+  secondary_color: '#013644',
+  accent_color: '#006B59',
+  banner_slide_1: 'images/hero-1.png',
+  banner_slide_2: 'images/hero-2.png',
+  banner_slide_3: 'images/hero-3.png',
+  banner_slide_4: 'images/banner-davi.jpg',
+  banner_mobile: 'images/plantae-hero-1-mb.png'
+};
+
+for (const [k, v] of Object.entries(defaultConfigs)) {
+  const existing = getCfgStmt.get(k);
+  if (!existing) {
+    setCfgStmt.run(k, v);
+  }
+}
+
+// Seed initial context-aware messages
+const defaultMessages = [
+  {
+    action_key: 'cta_simular_credito',
+    title: 'Simular Crédito (Topo / Cabeçalho)',
+    message: '🌾 Olá! Estive navegando no site da Plantae Agrocrédito e gostaria de solicitar uma *Simulação de Crédito Rural* personalizada para o meu agronegócio.'
+  },
+  {
+    action_key: 'cta_faca_simulacao',
+    title: 'Faça uma Simulação (Banners Principais)',
+    message: '🚜 Olá! Vi as opções de financiamento no site da Plantae e quero simular as taxas e prazos para a minha produção.'
+  },
+  {
+    action_key: 'cta_quero_ser_cliente',
+    title: 'Quero ser um Cliente Plantae',
+    message: '🌱 Olá! Tenho interesse em me tornar cliente da Plantae Agrocrédito e ter acesso a crédito ágil para o campo.'
+  },
+  {
+    action_key: 'cta_quero_ser_parceiro',
+    title: 'Quero ser um Parceiro Plantae',
+    message: '🤝 Olá! Sou consultor/correspondente do agro e gostaria de saber como me tornar um parceiro oficial da Plantae.'
+  },
+  {
+    action_key: 'cta_falar_gerente',
+    title: 'Falar com um Gerente de Contas',
+    message: '👨‍💼 Olá! Gostaria de conversar com um gerente de contas da Plantae Agrocrédito para atendimento exclusivo.'
+  },
+  {
+    action_key: 'cta_credito_rural',
+    title: 'Crédito Rural (Culturas e Lavouras)',
+    message: '🌾 Olá! Gostaria de consultoria sobre *Crédito Rural* para minha lavoura/safra.'
+  },
+  {
+    action_key: 'cta_consignagro',
+    title: 'ConsignAgro (Crédito Consignado)',
+    message: '💼 Olá! Gostaria de informações sobre as condições especiais do *ConsignAgro* da Plantae.'
+  },
+  {
+    action_key: 'cta_seguros',
+    title: 'Seguros Agrícolas',
+    message: '🛡️ Olá! Gostaria de fazer uma cotação de *Seguro Agrícola / Safra* com a equipe Plantae.'
+  },
+  {
+    action_key: 'cta_whatsapp_flutuante',
+    title: 'WhatsApp Flutuante (Acesso Rápido)',
+    message: '🌾 Olá! Estou no site da Plantae Agrocrédito e gostaria de tirar algumas dúvidas pelo WhatsApp.'
+  },
+  {
+    action_key: 'cta_atendimento_geral',
+    title: 'Atendimento Geral / Rodapé',
+    message: '💬 Olá! Gostaria de atendimento comercial da equipe Plantae Agrocrédito.'
+  }
+];
+
+const getMsgStmt = db.prepare('SELECT current_message FROM context_messages WHERE action_key = ?');
+const insertMsgStmt = db.prepare(`
+  INSERT INTO context_messages (action_key, title, default_message, current_message)
+  VALUES (?, ?, ?, ?)
+`);
+
+for (const m of defaultMessages) {
+  const existing = getMsgStmt.get(m.action_key);
+  if (!existing) {
+    insertMsgStmt.run(m.action_key, m.title, m.message, m.message);
+  }
+}
+
+module.exports = {
+  db,
+  getConfig(key) {
+    const row = db.prepare('SELECT value FROM config WHERE key = ?').get(key);
+    return row ? row.value : null;
+  },
+  setConfig(key, value) {
+    db.prepare('INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)').run(key, String(value));
+  },
+  getAllConfigs() {
+    const rows = db.prepare('SELECT key, value FROM config').all();
+    const configMap = {};
+    for (const r of rows) {
+      configMap[r.key] = r.value;
+    }
+    return configMap;
+  },
+  getContextMessages() {
+    return db.prepare('SELECT * FROM context_messages ORDER BY action_key ASC').all();
+  },
+  getContextMessage(action_key) {
+    return db.prepare('SELECT * FROM context_messages WHERE action_key = ?').get(action_key);
+  },
+  updateContextMessage(action_key, newMessage) {
+    return db.prepare(`
+      UPDATE context_messages 
+      SET current_message = ?, updated_at = CURRENT_TIMESTAMP 
+      WHERE action_key = ?
+    `).run(newMessage, action_key);
+  },
+  resetContextMessage(action_key) {
+    return db.prepare(`
+      UPDATE context_messages 
+      SET current_message = default_message, updated_at = CURRENT_TIMESTAMP 
+      WHERE action_key = ?
+    `).run(action_key);
+  },
+  insertEvent(data) {
+    const stmt = db.prepare(`
+      INSERT INTO events (
+        type, session_id, action_key, button_text, referrer,
+        utm_source, utm_medium, utm_campaign, device, browser, os, ip, whatsapp_message, duration_seconds
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    return stmt.run(
+      data.type || 'input',
+      data.session_id || '',
+      data.action_key || '',
+      data.button_text || '',
+      data.referrer || '',
+      data.utm_source || '',
+      data.utm_medium || '',
+      data.utm_campaign || '',
+      data.device || 'Desktop',
+      data.browser || '',
+      data.os || '',
+      data.ip || '',
+      data.whatsapp_message || '',
+      data.duration_seconds || 0
+    );
+  },
+  getRecentEvents(limit = 100) {
+    return db.prepare('SELECT * FROM events ORDER BY id DESC LIMIT ?').all(limit);
+  },
+  getRecentLeads(limit = 50) {
+    return db.prepare(`
+      SELECT * FROM events 
+      WHERE type = 'output_whatsapp' 
+      ORDER BY id DESC 
+      LIMIT ?
+    `).all(limit);
+  },
+  getSystemStats() {
+    const totalEvents = db.prepare('SELECT COUNT(*) as count FROM events').get().count;
+    const totalInputs = db.prepare("SELECT COUNT(*) as count FROM events WHERE type = 'input'").get().count;
+    const totalExits = db.prepare("SELECT COUNT(*) as count FROM events WHERE type = 'exit'").get().count;
+    const totalLeads = db.prepare("SELECT COUNT(*) as count FROM events WHERE type = 'output_whatsapp'").get().count;
+    const totalSocial = db.prepare("SELECT COUNT(*) as count FROM events WHERE type = 'output_social'").get().count;
+    return {
+      total_events: totalEvents,
+      total_inputs: totalInputs,
+      total_exits: totalExits,
+      total_leads: totalLeads,
+      total_social: totalSocial
+    };
+  }
+};

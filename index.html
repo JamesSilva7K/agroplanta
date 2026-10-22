@@ -199,7 +199,422 @@ a:visited:hover {
 <i aria-hidden="true" class="eicon-chevron-left"></i></div><div class="elementor-swiper-button elementor-swiper-button-next" role="button" tabindex="0" aria-label="Próximo slide">
 <i aria-hidden="true" class="eicon-chevron-right"></i></div></div></div></div></div><div class="elementor-element elementor-element-486e352 elementor--v-position-bottom elementor-hidden-desktop elementor-hidden-tablet elementor--h-position-center elementor-arrows-position-inside elementor-widget elementor-widget-slides" data-id="486e352" data-element_type="widget" data-e-type="widget" data-settings='{" navigation":"arrows","autoplay":"yes","autoplay_speed":5000,"infinite":"yes","transition":"slide","transition_speed":500}' data-widget_type="slides.default"><div class="elementor-widget-container"><div class="elementor-swiper"><div class="elementor-slides-wrapper elementor-main-swiper swiper" role="region" aria-roledescription="carousel" aria-label="Slides" dir="ltr" data-animation="fadeInUp"><div class="swiper-wrapper elementor-slides"><div class="elementor-repeater-item-8657dfc swiper-slide" role="group" aria-roledescription="slide"><div class="swiper-slide-bg elementor-ken-burns elementor-ken-burns--in" role="img" aria-label="plantae-hero-1-mb"></div><div class="elementor-background-overlay"></div><div class="swiper-slide-inner"><div class="swiper-slide-contents"><div class="elementor-slide-heading">Crédito rural descomplicado e rápido</div><div class="elementor-slide-description">Potencialize a sua produtividade com recurso livre.</div></div></div></div><div class="elementor-repeater-item-545cebe swiper-slide" role="group" aria-roledescription="slide"><div class="swiper-slide-bg elementor-ken-burns elementor-ken-burns--in" role="img" aria-label="p-seg-hero"></div><div class="elementor-background-overlay"></div><div class="swiper-slide-inner"><div class="swiper-slide-contents"><div class="elementor-slide-heading">Plantae Seguros.</div><div class="elementor-slide-description">As melhores condições do mercado e proteção para você se sentir tranquilo dentro e fora da porteira.</div></div></div></div></div><div class="elementor-swiper-button elementor-swiper-button-prev" role="button" tabindex="0" aria-label="Slide anterior">
 <i aria-hidden="true" class="eicon-chevron-left"></i></div><div class="elementor-swiper-button elementor-swiper-button-next" role="button" tabindex="0" aria-label="Próximo slide">
-<i aria-hidden="true" class="eicon-chevron-right"></i></div></div></div></div></div></div><div class="elementor-element elementor-element-badf403 e-flex e-con-boxed e-con e-parent" data-id="badf403" data-element_type="container" data-e-type="container" data-settings='{" background_background":"gradient"}'><div class="e-con-inner"><div class="elementor-element elementor-element-66913ea e-con-full e-flex e-con e-child" data-id="66913ea" data-element_type="container" data-e-type="container"><div class="elementor-element elementor-element-3fe39e9 elementor-widget elementor-widget-image" data-id="3fe39e9" data-element_type="widget" data-e-type="widget" data-widget_type="image.default"><div class="elementor-widget-container">
+<i aria-hidden="true" class="eicon-chevron-right"></i></div></div></div></div></div></div>
+
+<!-- ============================================================== -->
+<!-- PLANTAE AGROCRÉDITO - SIMULADOR INTELIGENTE (IMAGEM 1 & IMAGEM 2) -->
+<!-- ============================================================== -->
+<style id="plantae-simulator-styles">
+  .plantae-simulator-section {
+    background-color: #ffffff !important;
+    padding: 70px 24px 80px 24px;
+    width: 100%;
+    position: relative;
+    box-sizing: border-box;
+    scroll-margin-top: 50px;
+  }
+  .plantae-sim-container {
+    max-width: 1140px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+  }
+  .plantae-sim-image-col {
+    flex: 1;
+    max-width: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .plantae-sim-img {
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    display: block;
+    object-fit: contain;
+  }
+  .plantae-sim-form-col {
+    flex: 1;
+    max-width: 430px;
+    width: 100%;
+  }
+  .plantae-simulator-card {
+    background: #f7f9fa;
+    border: 1px solid #eef2f5;
+    border-radius: 16px;
+    padding: 34px 28px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+  }
+  .plantae-simulator-card.sim-highlight {
+    animation: simCardPulse 1.2s ease-in-out;
+  }
+  @keyframes simCardPulse {
+    0%, 100% { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04); transform: scale(1); }
+    50% { box-shadow: 0 0 0 6px rgba(0, 168, 112, 0.35); transform: scale(1.02); }
+  }
+  .plantae-sim-field {
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  .plantae-sim-label {
+    display: block;
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #013644;
+    margin-bottom: 8px;
+    letter-spacing: -0.2px;
+  }
+  .plantae-sim-input {
+    width: 100%;
+    height: 48px;
+    background: #ffffff;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    padding: 0 14px;
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px;
+    color: #1e1e1e;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .plantae-sim-input::placeholder {
+    color: #9aa5b1;
+    font-size: 14.5px;
+  }
+  .plantae-sim-input:focus {
+    border-color: #00A870;
+    box-shadow: 0 0 0 3px rgba(0, 168, 112, 0.18);
+  }
+  .plantae-sim-input.input-error, .plantae-sim-select.input-error {
+    border-color: #e53e3e !important;
+    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.2) !important;
+  }
+  .plantae-sim-error-msg {
+    display: block;
+    color: #e53e3e;
+    font-size: 12px;
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin-top: 5px;
+    min-height: 16px;
+    font-weight: 500;
+  }
+  .plantae-select-wrapper {
+    position: relative;
+    width: 100%;
+  }
+  .plantae-sim-select {
+    width: 100%;
+    height: 48px;
+    background: #ffffff;
+    border: 1px solid #000000;
+    border-radius: 6px;
+    padding: 0 38px 0 14px;
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px;
+    color: #1e1e1e;
+    box-sizing: border-box;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .plantae-select-wrapper::after {
+    content: "";
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #1e1e1e;
+    pointer-events: none;
+  }
+  .plantae-sim-select:focus {
+    border-color: #00A870;
+    box-shadow: 0 0 0 3px rgba(0, 168, 112, 0.18);
+  }
+  .plantae-sim-submit-btn {
+    width: 100%;
+    height: 48px;
+    background-color: #00A870;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 14.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: background-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .plantae-sim-submit-btn:hover {
+    background-color: #008f5d;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0, 168, 112, 0.35);
+  }
+  .plantae-sim-submit-btn:active {
+    transform: translateY(1px);
+  }
+  .plantae-sim-disclaimer {
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 11px;
+    line-height: 1.45;
+    color: #555e68;
+    margin: 16px 0 0 0;
+    text-align: left;
+  }
+
+  /* Result Box */
+  .plantae-sim-result {
+    text-align: center;
+    animation: fadeInResult 0.35s ease;
+  }
+  @keyframes fadeInResult {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .sim-result-header {
+    margin-bottom: 16px;
+  }
+  .sim-result-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e6f7f0;
+    color: #00A870;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .sim-check-icon {
+    width: 16px;
+    height: 16px;
+  }
+  .sim-result-details {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+    text-align: left;
+  }
+  .sim-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+    color: #475569;
+  }
+  .sim-detail-row:last-child {
+    border-bottom: none;
+  }
+  .sim-detail-row.highlight-row {
+    background: #f8fafc;
+    margin: 6px -10px -6px -10px;
+    padding: 10px 10px;
+    border-radius: 6px;
+  }
+  .sim-detail-val {
+    font-weight: 700;
+    color: #013644;
+  }
+  .sim-detail-val.parcel-value {
+    color: #00A870;
+    font-size: 17px;
+  }
+  .plantae-sim-interest-btn {
+    width: 100%;
+    height: 50px;
+    background: linear-gradient(135deg, #00A870 0%, #008f5d 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(0, 168, 112, 0.35);
+    transition: all 0.2s ease;
+  }
+  .plantae-sim-interest-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 168, 112, 0.5);
+  }
+  .sim-wa-icon {
+    width: 20px;
+    height: 20px;
+  }
+  .sim-auto-redirect-note {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 10px;
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .sim-reset-link {
+    background: none;
+    border: none;
+    color: #013644;
+    font-size: 13px;
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-weight: 600;
+    margin-top: 14px;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .sim-reset-link:hover {
+    color: #00A870;
+  }
+
+  @media (max-width: 991px) {
+    .plantae-simulator-section {
+      padding: 40px 16px 50px 16px;
+    }
+    .plantae-sim-container {
+      flex-direction: column;
+      gap: 32px;
+    }
+    .plantae-sim-image-col {
+      max-width: 380px;
+    }
+    .plantae-sim-form-col {
+      max-width: 100%;
+    }
+  }
+</style>
+
+<section id="simulador-credito" class="plantae-simulator-section">
+  <div class="plantae-sim-container">
+    <!-- Coluna Esquerda: Produtores Rurais no Canavial (Imagem 1) -->
+    <div class="plantae-sim-image-col">
+      <img src="images/1-doodle-capa-plantar-1.png" alt="Produtores Rurais Plantae Agrocrédito" class="plantae-sim-img" width="533" height="607">
+    </div>
+
+    <!-- Coluna Direita: Box de Simulação Inteligente (Imagem 1 & 2) -->
+    <div class="plantae-sim-form-col">
+      <div class="plantae-simulator-card" id="plantae-simulator-box">
+        <form id="credit-simulator-form" onsubmit="window.handleSimulationSubmit(event)" novalidate>
+          <!-- Campo 1: Valor do crédito -->
+          <div class="plantae-sim-field">
+            <label for="sim-credit-value" class="plantae-sim-label">Valor do crédito</label>
+            <input 
+              type="text" 
+              id="sim-credit-value" 
+              name="credit_value" 
+              class="plantae-sim-input" 
+              placeholder="Ex: R$ 550.000,00" 
+              autocomplete="off"
+            >
+            <span class="plantae-sim-error-msg" id="err-credit-value"></span>
+          </div>
+
+          <!-- Campo 2: Quantidade de parcelas -->
+          <div class="plantae-sim-field">
+            <label for="sim-installments" class="plantae-sim-label">Quantidade de parcelas</label>
+            <input 
+              type="number" 
+              id="sim-installments" 
+              name="installments" 
+              class="plantae-sim-input" 
+              placeholder="" 
+              min="1" 
+              max="120"
+            >
+            <span class="plantae-sim-error-msg" id="err-installments"></span>
+          </div>
+
+          <!-- Campo 3: Frequência (Exatamente conforme Imagem 2) -->
+          <div class="plantae-sim-field">
+            <label for="sim-frequency" class="plantae-sim-label">Frequência</label>
+            <div class="plantae-select-wrapper">
+              <select id="sim-frequency" name="frequency" class="plantae-sim-select">
+                <option value="" disabled selected>Selecione</option>
+                <option value="Mensal">Mensal</option>
+                <option value="Semestral">Semestral</option>
+                <option value="Anual">Anual</option>
+                <option value="A definir">A definir</option>
+              </select>
+            </div>
+            <span class="plantae-sim-error-msg" id="err-frequency"></span>
+          </div>
+
+          <!-- Botão Simular -->
+          <button type="submit" id="btn-simular" class="plantae-sim-submit-btn">
+            <span>SIMULAR</span>
+          </button>
+
+          <!-- Texto Legal do Box -->
+          <p class="plantae-sim-disclaimer">
+            Essa simulação considera taxas médias de mercado. Para acessar as taxas disponíveis para você e seu perfil, clique em "Tenho interesse", que nosso time comercial entrará em contato. Essa simulação está sujeita a análise de crédito futura.
+          </p>
+        </form>
+
+        <!-- Box de Resultado Inteligente -->
+        <div id="sim-result-box" class="plantae-sim-result" style="display: none;">
+          <div class="sim-result-header">
+            <div class="sim-result-badge">
+              <svg viewBox="0 0 24 24" class="sim-check-icon"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              <span>Simulação Realizada!</span>
+            </div>
+          </div>
+          <div class="sim-result-details">
+            <div class="sim-detail-row">
+              <span class="sim-detail-label">Valor Solicitado:</span>
+              <strong class="sim-detail-val" id="res-credit-value">R$ 550.000,00</strong>
+            </div>
+            <div class="sim-detail-row">
+              <span class="sim-detail-label">Plano de Pagamento:</span>
+              <strong class="sim-detail-val" id="res-installments-freq">36 parcelas (Semestral)</strong>
+            </div>
+            <div class="sim-detail-row highlight-row">
+              <span class="sim-detail-label">Parcela Estimada:</span>
+              <strong class="sim-detail-val parcel-value" id="res-parcel-val">R$ 22.450,00*</strong>
+            </div>
+          </div>
+
+          <button type="button" id="btn-tenho-interesse" class="plantae-sim-interest-btn" onclick="window.finalizeSimulationWhatsApp()">
+            <svg viewBox="0 0 24 24" class="sim-wa-icon"><path fill="currentColor" d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2z"/></svg>
+            <span>TENHO INTERESSE (CONCLUIR NO WHATSAPP)</span>
+          </button>
+          
+          <div class="sim-auto-redirect-note" id="sim-redirect-timer">
+            Redirecionando para o WhatsApp em <span id="countdown">3</span>s...
+          </div>
+
+          <button type="button" class="sim-reset-link" onclick="window.resetSimulationForm()">
+            ← Fazer outra simulação
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="elementor-element elementor-element-badf403 e-flex e-con-boxed e-con e-parent" data-id="badf403" data-element_type="container" data-e-type="container" data-settings='{" background_background":"gradient"}'><div class="e-con-inner"><div class="elementor-element elementor-element-66913ea e-con-full e-flex e-con e-child" data-id="66913ea" data-element_type="container" data-e-type="container"><div class="elementor-element elementor-element-3fe39e9 elementor-widget elementor-widget-image" data-id="3fe39e9" data-element_type="widget" data-e-type="widget" data-widget_type="image.default"><div class="elementor-widget-container">
 <picture><source srcset="images/1-doodle-capa-plantar-1.png.webp 533w, images/1-doodle-capa-plantar-1-263x300.png.webp 263w" sizes="(max-width: 533px) 100vw, 533px" type="image/webp"><img data-lazyloaded="1" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MzMiIGhlaWdodD0iNjA3IiB2aWV3Qm94PSIwIDAgNTMzIDYwNyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgc3R5bGU9ImZpbGw6I2NmZDRkYjtmaWxsLW9wYWNpdHk6IDAuMTsiLz48L3N2Zz4=" decoding="async" width="533" height="607" data-src="images/1-doodle-capa-plantar-1.png" class="attachment-large size-large wp-image-1013 webpexpress-processed" alt="" data-srcset="images/1-doodle-capa-plantar-1.png 533w, images/1-doodle-capa-plantar-1-263x300.png 263w" data-sizes="(max-width: 533px) 100vw, 533px"></picture></div></div></div><div class="elementor-element elementor-element-7bc8e71 e-con-full e-flex e-con e-child" data-id="7bc8e71" data-element_type="container" data-e-type="container"><div class="elementor-element elementor-element-f6117ed elementor-widget elementor-widget-heading" data-id="f6117ed" data-element_type="widget" data-e-type="widget" data-widget_type="heading.default"><div class="elementor-widget-container"><h1 class="elementor-heading-title elementor-size-default">Há mais de <b>20 anos</b><br> apoiando o <b>agro brasileiro.</b></h1></div></div><div class="elementor-element elementor-element-b10e2bc elementor-widget__width-initial elementor-widget elementor-widget-text-editor" data-id="b10e2bc" data-element_type="widget" data-e-type="widget" data-widget_type="text-editor.default"><div class="elementor-widget-container"><p>Inovação, confiança e compromisso com o campo e os resultados do produtor rural. Soluções financeiras diversificadas e descomplicadas para o que você precisa durante todo ciclo produtivo.</p></div></div></div></div></div><div class="elementor-element elementor-element-5be4692 e-flex e-con-boxed e-con e-parent" data-id="5be4692" data-element_type="container" data-e-type="container"><div class="e-con-inner"><div class="elementor-element elementor-element-886d8f7 elementor-widget elementor-widget-heading" data-id="886d8f7" data-element_type="widget" data-e-type="widget" data-widget_type="heading.default"><div class="elementor-widget-container"><h2 class="elementor-heading-title elementor-size-default">Segmentos em que atuamos:</h2></div></div><div class="elementor-element elementor-element-6ee8701 e-con-full e-flex e-con e-child" data-id="6ee8701" data-element_type="container" data-e-type="container"><div class="elementor-element elementor-element-2cb3aaa e-con-full e-flex e-con e-child" data-id="2cb3aaa" data-element_type="container" data-e-type="container" data-settings='{" background_background":"classic"}'><div class="elementor-element elementor-element-60593b1 elementor-widget elementor-widget-heading" data-id="60593b1" data-element_type="widget" data-e-type="widget" data-widget_type="heading.default"><div class="elementor-widget-container"><h2 class="elementor-heading-title elementor-size-default">Cana-de-açúcar</h2></div></div></div><div class="elementor-element elementor-element-e5e7c7e e-con-full e-flex e-con e-child" data-id="e5e7c7e" data-element_type="container" data-e-type="container" data-settings='{" background_background":"classic"}'><div class="elementor-element elementor-element-dc8d214 elementor-widget elementor-widget-heading" data-id="dc8d214" data-element_type="widget" data-e-type="widget" data-widget_type="heading.default"><div class="elementor-widget-container"><h2 class="elementor-heading-title elementor-size-default">Soja</h2></div></div></div><div class="elementor-element elementor-element-4f12c45 e-con-full e-flex e-con e-child" data-id="4f12c45" data-element_type="container" data-e-type="container" data-settings='{" background_background":"classic"}'><div class="elementor-element elementor-element-0d57d3f elementor-widget elementor-widget-heading" data-id="0d57d3f" data-element_type="widget" data-e-type="widget" data-widget_type="heading.default"><div class="elementor-widget-container"><h2 class="elementor-heading-title elementor-size-default">Milho</h2></div></div></div><div class="elementor-element elementor-element-fb3aec4 e-con-full e-flex e-con e-child" data-id="fb3aec4" data-element_type="container" data-e-type="container" data-settings='{" background_background":"classic"}'><div class="elementor-element elementor-element-fa4b17a elementor-widget elementor-widget-heading" data-id="fa4b17a" data-element_type="widget" data-e-type="widget" data-widget_type="heading.default"><div class="elementor-widget-container"><h2 class="elementor-heading-title elementor-size-default">Eucalipto</h2></div></div></div></div><div class="elementor-element elementor-element-7892dac e-con-full e-flex e-con e-child" data-id="7892dac" data-element_type="container" data-e-type="container"><div class="elementor-element elementor-element-be12417 e-con-full e-flex e-con e-child" data-id="be12417" data-element_type="container" data-e-type="container" data-settings='{" background_background":"classic"}'><div class="elementor-element elementor-element-8525428 elementor-widget elementor-widget-heading" data-id="8525428" data-element_type="widget" data-e-type="widget" data-widget_type="heading.default"><div class="elementor-widget-container"><h2 class="elementor-heading-title elementor-size-default">Citrus</h2></div></div></div><div class="elementor-element elementor-element-0a7ad26 e-con-full e-flex e-con e-child" data-id="0a7ad26" data-element_type="container" data-e-type="container" data-settings='{" background_background":"classic"}'><div class="elementor-element elementor-element-23c7695 elementor-widget elementor-widget-heading" data-id="23c7695" data-element_type="widget" data-e-type="widget" data-widget_type="heading.default"><div class="elementor-widget-container"><h2 class="elementor-heading-title elementor-size-default">Leite</h2></div></div></div><div class="elementor-element elementor-element-e0714b9 e-con-full e-flex e-con e-child" data-id="e0714b9" data-element_type="container" data-e-type="container" data-settings='{" background_background":"classic"}'><div class="elementor-element elementor-element-eb2bfa5 elementor-widget elementor-widget-heading" data-id="eb2bfa5" data-element_type="widget" data-e-type="widget" data-widget_type="heading.default"><div class="elementor-widget-container"><h2 class="elementor-heading-title elementor-size-default">Pecuária</h2></div></div></div><div class="elementor-element elementor-element-68bd871 e-con-full e-flex e-con e-child" data-id="68bd871" data-element_type="container" data-e-type="container" data-settings='{" background_background":"gradient"}'><div class="elementor-element elementor-element-f44829e elementor-widget elementor-widget-heading" data-id="f44829e" data-element_type="widget" data-e-type="widget" data-widget_type="heading.default"><div class="elementor-widget-container"><h2 class="elementor-heading-title elementor-size-default">Entre
 outros...</h2></div></div></div></div><div class="elementor-element elementor-element-a22bb5d e-con-full e-flex e-con e-child" data-id="a22bb5d" data-element_type="container" data-e-type="container"><div class="elementor-element elementor-element-8688450 elementor-align-center elementor-widget elementor-widget-button" data-id="8688450" data-element_type="widget" data-e-type="widget" data-widget_type="button.default"><div class="elementor-widget-container"><div class="elementor-button-wrapper">
 <a class="elementor-button elementor-button-link elementor-size-sm" href="https://materiais.plantaeagrocredito.com.br/lp-whatsapp">
@@ -346,11 +761,11 @@ Atendimento						</a></h3><p class="elementor-icon-box-description">
 <a href="https://od.softsaaspif.com.br/FH51M01/#/acessocliente">
 Ouvidoria e Canal de Denúncias						</a></h3><p class="elementor-icon-box-description">
 08007219701</p></div></div></div></div><div class="elementor-element elementor-element-e215768 elementor-position-inline-start elementor-view-default elementor-mobile-position-block-start elementor-widget elementor-widget-icon-box" data-id="e215768" data-element_type="widget" data-e-type="widget" data-widget_type="icon-box.default"><div class="elementor-widget-container"><div class="elementor-icon-box-wrapper"><div class="elementor-icon-box-icon">
-<a href="mailto:contato@plantaeagrocredito.com.br" class="elementor-icon" tabindex="-1" aria-label="E-mail">
+<a href="mailto:faleconosco@plantaeagrocredito.com.br" class="elementor-icon" tabindex="-1" aria-label="E-mail">
 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="29" viewBox="0 0 36 29" fill="none"><path d="M32.4 0.171387H3.6C1.62 0.171387 0.018 1.79139 0.018 3.77139L0 25.3714C0 27.3514 1.62 28.9714 3.6 28.9714H32.4C34.38 28.9714 36 27.3514 36 25.3714V3.77139C36 1.79139 34.38 0.171387 32.4 0.171387ZM32.4 25.3714H3.6V7.37139L18 16.3714L32.4 7.37139V25.3714ZM18 12.7714L3.6 3.77139H32.4L18 12.7714Z" fill="#BEFAE0"></path></svg>				</a></div><div class="elementor-icon-box-content"><h3 class="elementor-icon-box-title">
-<a href="mailto:contato@plantaeagrocredito.com.br">
+<a href="mailto:faleconosco@plantaeagrocredito.com.br">
 E-mail						</a></h3><p class="elementor-icon-box-description">
-<a href="mailto:contato@plantaeagrocredito.com.br">contato@plantaeagrocredito.com.br</a></p></div></div></div></div><div class="elementor-element elementor-element-a984221 elementor-position-inline-start elementor-view-default elementor-mobile-position-block-start elementor-widget elementor-widget-icon-box" data-id="a984221" data-element_type="widget" data-e-type="widget" data-widget_type="icon-box.default"><div class="elementor-widget-container"><div class="elementor-icon-box-wrapper"><div class="elementor-icon-box-icon">
+<a href="mailto:faleconosco@plantaeagrocredito.com.br">faleconosco@plantaeagrocredito.com.br</a></p></div></div></div></div><div class="elementor-element elementor-element-a984221 elementor-position-inline-start elementor-view-default elementor-mobile-position-block-start elementor-widget elementor-widget-icon-box" data-id="a984221" data-element_type="widget" data-e-type="widget" data-widget_type="icon-box.default"><div class="elementor-widget-container"><div class="elementor-icon-box-wrapper"><div class="elementor-icon-box-icon">
 <span class="elementor-icon">
 <svg xmlns="http://www.w3.org/2000/svg" width="26" height="38" viewBox="0 0 26 38" fill="none"><path d="M13 0.171387C5.81286 0.171387 0 6.00952 0 13.2279C0 23.0203 13 37.4757 13 37.4757C13 37.4757 26 23.0203 26 13.2279C26 6.00952 20.1871 0.171387 13 0.171387ZM13 17.891C10.4371 17.891 8.35714 15.8019 8.35714 13.2279C8.35714 10.6539 10.4371 8.56487 13 8.56487C15.5629 8.56487 17.6429 10.6539 17.6429 13.2279C17.6429 15.8019 15.5629 17.891 13 17.891Z" fill="#BEFAE0"></path></svg>				</span></div><div class="elementor-icon-box-content"><h3 class="elementor-icon-box-title">
 <span>

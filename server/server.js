@@ -17,7 +17,9 @@ const {
   getContextMessages, 
   getContextMessage, 
   updateContextMessage, 
-  resetContextMessage 
+  resetContextMessage,
+  saveSimulation,
+  getRecentSimulations
 } = require('./db');
 const { getMetrics } = require('./analytics');
 const { telegramBot } = require('./bot/telegram_bot');
@@ -188,6 +190,96 @@ app.get('/r/whatsapp', (req, res) => {
     console.error('Error handling redirect:', err);
     return res.redirect(302, 'https://wa.me/5511999999999');
   }
+});
+
+// 2.1 SIMULATION SUBMISSION & WHATSAPP ROUTING ENDPOINT
+app.post('/api/simulate', (req, res) => {
+  try {
+    const body = req.body || {};
+    const userAgent = req.headers['user-agent'] || '';
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+    const device = body.device || detectDevice(userAgent);
+    const browser = body.browser || detectBrowser(userAgent);
+
+    const creditValue = (body.credit_value || '').trim();
+    const installments = parseInt(body.installments, 10) || 0;
+    const frequency = (body.frequency || '').trim();
+    const estimatedInstallment = (body.estimated_installment || '').trim();
+    const sessionId = body.session_id || 'sess_' + Math.random().toString(36).substring(2, 9);
+    const waNumber = getConfig('whatsapp_number') || '5511999999999';
+
+    if (!creditValue || installments <= 0 || !frequency || frequency === 'Selecione') {
+      return res.status(400).json({ error: 'Preencha todos os campos da simulação corretamente.' });
+    }
+
+    // Contextual message for WhatsApp pre-fill
+    const waText = `🌾 Olá! Realizei uma simulação de Crédito Rural no site da Plantae:\n\n` +
+      `💰 *Valor Solicitado:* ${creditValue}\n` +
+      `🔢 *Quantidade de Parcelas:* ${installments}x\n` +
+      `⏱️ *Frequência de Pagamento:* ${frequency}\n` +
+      `💵 *Estimativa da Parcela:* ${estimatedInstallment}\n\n` +
+      `Gostaria de falar com um especialista da Plantae Agrocrédito para validar as taxas e condições do meu perfil!`;
+
+    const simData = {
+      session_id: sessionId,
+      credit_value: creditValue,
+      installments: installments,
+      frequency: frequency,
+      estimated_installment: estimatedInstallment,
+      whatsapp_number: waNumber,
+      whatsapp_message: waText,
+      utm_source: body.utm_source || '',
+      utm_medium: body.utm_medium || '',
+      utm_campaign: body.utm_campaign || '',
+      device: device,
+      browser: browser,
+      ip: ip
+    };
+
+    // Save simulation in database
+    saveSimulation(simData);
+
+    // Also record event for analytics
+    insertEvent({
+      type: 'output_whatsapp',
+      session_id: sessionId,
+      action_key: 'simulacao_credito',
+      button_text: `Simulação: ${creditValue} / ${installments}x (${frequency})`,
+      referrer: body.referrer || '',
+      utm_source: body.utm_source || '',
+      utm_medium: body.utm_medium || '',
+      utm_campaign: body.utm_campaign || '',
+      device: device,
+      browser: browser,
+      os: body.os || '',
+      ip: ip,
+      whatsapp_message: waText,
+      duration_seconds: body.duration_seconds || 0
+    });
+
+    // Notify Telegram Admin immediately with complete simulation data!
+    telegramBot.notifySimulation(simData).catch(err => console.error('Telegram simulation alert error:', err.message));
+
+    const encodedMsg = encodeURIComponent(waText);
+    const redirectUrl = `https://wa.me/${waNumber}?text=${encodedMsg}`;
+
+    return res.json({
+      success: true,
+      redirect_url: redirectUrl,
+      whatsapp_number: waNumber,
+      message: waText,
+      data: simData
+    });
+  } catch (err) {
+    console.error('Error handling simulation:', err);
+    return res.status(500).json({ error: 'Erro ao processar simulação' });
+  }
+});
+
+// Admin API to fetch recent simulations
+app.get('/api/simulations', requireAdminAuth, (req, res) => {
+  const sims = getRecentSimulations(50);
+  return res.json({ success: true, simulations: sims });
 });
 
 // 3. CONTEXT MESSAGES API (PROTECTED)

@@ -80,6 +80,7 @@
     });
     applyDynamicThemeAndBanners();
     setupLinkInterceptors();
+    initCreditSimulator();
     injectFloatingWhatsApp();
   });
 
@@ -168,7 +169,7 @@
     return 'cta_atendimento_geral';
   }
 
-  // 6. Intercept CTAs and Route to WhatsApp
+  // 6. Intercept CTAs and Route to WhatsApp or Simulator
   function setupLinkInterceptors() {
     document.addEventListener('click', function (e) {
       const target = e.target.closest('a, button');
@@ -191,13 +192,27 @@
         return;
       }
 
+      // Check for Simulation CTAs (Scrolls smoothly to the Simulator Card as in Image 1 & 2)
+      const isSimulationCta = 
+        href.includes('simule-seu-credito') ||
+        href.includes('solicite-seu-credito') ||
+        /simular|simulaç/i.test(text);
+
+      if (isSimulationCta && !target.closest('#credit-simulator-form') && !target.closest('#sim-result-box')) {
+        e.preventDefault();
+        trackEvent('input_simulation_click', {
+          action_key: 'cta_scroll_simulador',
+          button_text: text || 'Simular Crédito'
+        });
+        scrollToSimulator();
+        return;
+      }
+
       // Check for WhatsApp / Conversion CTAs
       const isConversionCta = 
         href.includes('lp-whatsapp') ||
-        href.includes('simule-seu-credito') ||
-        href.includes('solicite-seu-credito') ||
         target.classList.contains('elementor-button') ||
-        /simular|simulaç|crédito|consignagro|seguro|falar com um gerente/i.test(text);
+        /crédito|consignagro|seguro|falar com um gerente|atendimento/i.test(text);
 
       // Avoid intercepting internal anchors like #content or navigation dropdowns
       if (href.startsWith('#') && !isConversionCta) return;
@@ -241,6 +256,210 @@
       }
     }, true);
   }
+
+  // 7. Intelligent Credit Simulator Engine (Matching Image 1 & Image 2)
+  let countdownTimer = null;
+  window._lastSimRedirectUrl = null;
+
+  function scrollToSimulator() {
+    const simSection = document.getElementById('simulador-credito');
+    if (simSection) {
+      simSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const card = document.getElementById('plantae-simulator-box');
+      if (card) {
+        card.classList.add('sim-highlight');
+        setTimeout(function () { card.classList.remove('sim-highlight'); }, 1400);
+      }
+      const creditInput = document.getElementById('sim-credit-value');
+      if (creditInput) {
+        setTimeout(function () { creditInput.focus(); }, 600);
+      }
+    }
+  }
+
+  function formatBRLMask(val) {
+    const digits = val.replace(/\D/g, '');
+    if (!digits) return '';
+    const num = parseInt(digits, 10) / 100;
+    return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  function initCreditSimulator() {
+    const creditInput = document.getElementById('sim-credit-value');
+    const installmentsInput = document.getElementById('sim-installments');
+    const frequencySelect = document.getElementById('sim-frequency');
+
+    if (!creditInput || !installmentsInput || !frequencySelect) return;
+
+    // Real-Time Currency Mask
+    creditInput.addEventListener('input', function (e) {
+      const formatted = formatBRLMask(e.target.value);
+      e.target.value = formatted;
+      if (formatted) {
+        creditInput.classList.remove('input-error');
+        const err = document.getElementById('err-credit-value');
+        if (err) err.textContent = '';
+      }
+    });
+
+    installmentsInput.addEventListener('input', function () {
+      installmentsInput.classList.remove('input-error');
+      const err = document.getElementById('err-installments');
+      if (err) err.textContent = '';
+    });
+
+    frequencySelect.addEventListener('change', function () {
+      frequencySelect.classList.remove('input-error');
+      const err = document.getElementById('err-frequency');
+      if (err) err.textContent = '';
+    });
+  }
+
+  window.handleSimulationSubmit = function (e) {
+    if (e) e.preventDefault();
+
+    const creditInput = document.getElementById('sim-credit-value');
+    const installmentsInput = document.getElementById('sim-installments');
+    const frequencySelect = document.getElementById('sim-frequency');
+    const form = document.getElementById('credit-simulator-form');
+    const resultBox = document.getElementById('sim-result-box');
+
+    if (!creditInput || !installmentsInput || !frequencySelect) return false;
+
+    // 1. Real Validations
+    let hasError = false;
+
+    const rawCredit = creditInput.value.replace(/\D/g, '');
+    const numCredit = rawCredit ? parseInt(rawCredit, 10) / 100 : 0;
+    if (!rawCredit || numCredit < 10000) {
+      creditInput.classList.add('input-error');
+      const err = document.getElementById('err-credit-value');
+      if (err) err.textContent = 'Informe um valor mínimo de R$ 10.000,00';
+      hasError = true;
+    }
+
+    const numInstallments = parseInt(installmentsInput.value, 10);
+    if (!numInstallments || numInstallments < 1 || numInstallments > 120) {
+      installmentsInput.classList.add('input-error');
+      const err = document.getElementById('err-installments');
+      if (err) err.textContent = 'Informe entre 1 e 120 parcelas';
+      hasError = true;
+    }
+
+    const frequency = frequencySelect.value;
+    if (!frequency || frequency === 'Selecione') {
+      frequencySelect.classList.add('input-error');
+      const err = document.getElementById('err-frequency');
+      if (err) err.textContent = 'Selecione a frequência desejada';
+      hasError = true;
+    }
+
+    if (hasError) return false;
+
+    // 2. Intelligent Calculation Engine (Agro benchmarks)
+    let rate = 0.0119; // Mensal (~1.19% a.m.)
+    if (frequency === 'Semestral') rate = 0.0735;
+    else if (frequency === 'Anual') rate = 0.152;
+    else if (frequency === 'A definir') rate = 0.0119;
+
+    let pmt = 0;
+    try {
+      pmt = numCredit * (rate / (1 - Math.pow(1 + rate, -numInstallments)));
+    } catch (err) {
+      pmt = numCredit / numInstallments;
+    }
+
+    const pmtFormatted = pmt.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const formattedCredit = numCredit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    // 3. Populate Result View
+    document.getElementById('res-credit-value').textContent = formattedCredit;
+    document.getElementById('res-installments-freq').textContent = `${numInstallments} parcelas (${frequency})`;
+    document.getElementById('res-parcel-val').textContent = `${pmtFormatted}*`;
+
+    const submitBtn = document.getElementById('btn-simular');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span>CALCULANDO...</span>';
+
+    const payload = {
+      credit_value: formattedCredit,
+      installments: numInstallments,
+      frequency: frequency,
+      estimated_installment: pmtFormatted,
+      session_id: sessionId,
+      referrer: document.referrer || '',
+      utm_source: utmSource,
+      utm_medium: utmMedium,
+      utm_campaign: utmCampaign,
+      device: getDeviceType()
+    };
+
+    fetch('/api/simulate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>SIMULAR</span>';
+
+        if (data && data.success) {
+          window._lastSimRedirectUrl = data.redirect_url;
+
+          // Transition to result box
+          form.style.display = 'none';
+          resultBox.style.display = 'block';
+
+          // Countdown auto redirect
+          let seconds = 3;
+          const cdSpan = document.getElementById('countdown');
+          if (cdSpan) cdSpan.textContent = seconds;
+
+          if (countdownTimer) clearInterval(countdownTimer);
+          countdownTimer = setInterval(function () {
+            seconds--;
+            if (cdSpan) cdSpan.textContent = seconds;
+            if (seconds <= 0) {
+              clearInterval(countdownTimer);
+              window.finalizeSimulationWhatsApp();
+            }
+          }, 1000);
+        } else {
+          alert(data.error || 'Não foi possível registrar a simulação. Tente novamente.');
+        }
+      })
+      .catch(function () {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>SIMULAR</span>';
+        const waMsg = encodeURIComponent(`🌾 Olá! Simulação Plantae Agrocrédito: ${formattedCredit} em ${numInstallments}x (${frequency})`);
+        window._lastSimRedirectUrl = `https://wa.me/5511999999999?text=${waMsg}`;
+        form.style.display = 'none';
+        resultBox.style.display = 'block';
+      });
+
+    return false;
+  };
+
+  window.finalizeSimulationWhatsApp = function () {
+    if (countdownTimer) clearInterval(countdownTimer);
+    if (window._lastSimRedirectUrl) {
+      window.open(window._lastSimRedirectUrl, '_blank');
+    } else {
+      window.open('https://wa.me/5511999999999', '_blank');
+    }
+  };
+
+  window.resetSimulationForm = function () {
+    if (countdownTimer) clearInterval(countdownTimer);
+    const form = document.getElementById('credit-simulator-form');
+    const resultBox = document.getElementById('sim-result-box');
+    if (form && resultBox) {
+      resultBox.style.display = 'none';
+      form.style.display = 'block';
+      form.reset();
+    }
+  };
 
   // 7. Modern Floating WhatsApp Button
   function injectFloatingWhatsApp() {

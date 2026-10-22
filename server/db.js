@@ -60,6 +60,25 @@ db.exec(`
     current_message TEXT NOT NULL,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE TABLE IF NOT EXISTS simulations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT,
+    credit_value TEXT NOT NULL,
+    installments INTEGER NOT NULL,
+    frequency TEXT NOT NULL,
+    estimated_installment TEXT,
+    whatsapp_number TEXT,
+    whatsapp_message TEXT,
+    utm_source TEXT,
+    utm_medium TEXT,
+    utm_campaign TEXT,
+    device TEXT,
+    browser TEXT,
+    ip TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_simulations_created ON simulations(created_at);
 `);
 
 // Safe column addition for existing db
@@ -247,5 +266,32 @@ module.exports = {
       total_leads: totalLeads,
       total_social: totalSocial
     };
+  },
+  saveSimulation(data) {
+    const stmt = db.prepare(`
+      INSERT INTO simulations (
+        session_id, credit_value, installments, frequency,
+        estimated_installment, whatsapp_number, whatsapp_message,
+        utm_source, utm_medium, utm_campaign, device, browser, ip
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    return stmt.run(
+      data.session_id || '',
+      data.credit_value || '',
+      data.installments || 0,
+      data.frequency || '',
+      data.estimated_installment || '',
+      data.whatsapp_number || '',
+      data.whatsapp_message || '',
+      data.utm_source || '',
+      data.utm_medium || '',
+      data.utm_campaign || '',
+      data.device || 'Desktop',
+      data.browser || '',
+      data.ip || ''
+    );
+  },
+  getRecentSimulations(limit = 50) {
+    return db.prepare('SELECT * FROM simulations ORDER BY id DESC LIMIT ?').all(limit);
   }
 };

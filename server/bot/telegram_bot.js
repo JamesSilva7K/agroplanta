@@ -120,6 +120,43 @@ class TelegramBotService {
     await this.sendMessage(targetChat, msg, inlineKeyboard);
   }
 
+  // Notificação instantânea ao administrador quando um lead completa uma SIMULAÇÃO de Crédito Rural
+  async notifySimulation(simData) {
+    const alertsActive = getConfig('bot_alerts_enabled') === '1';
+    const targetChat = this.adminChatId || getConfig('telegram_admin_id');
+    if (!alertsActive || !targetChat || !this.token) return;
+
+    const devIcon = simData.device === 'Mobile' ? '📱' : '💻';
+    const msg = `🌾 <b>NOVA SIMULAÇÃO DE CRÉDITO RURAL!</b> 🌾\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `💰 <b>Valor do Crédito:</b> <code>${simData.credit_value}</code>\n` +
+      `🔢 <b>Quantidade de Parcelas:</b> <code>${simData.installments}x</code>\n` +
+      `⏱️ <b>Frequência de Pagamento:</b> <code>${simData.frequency}</code>\n` +
+      `💵 <b>Estimativa por Parcela:</b> <code>${simData.estimated_installment}</code>\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `📱 <b>Destino WhatsApp:</b> <code>+${simData.whatsapp_number}</code>\n` +
+      `💬 <b>Mensagem Direcionada ao WhatsApp:</b>\n<i>"${simData.whatsapp_message}"</i>\n\n` +
+      `📍 <b>Origem / UTM:</b> ${simData.utm_source || 'Acesso Direto'}\n` +
+      `${devIcon} <b>Dispositivo:</b> ${simData.device} (${simData.browser || 'Navegador'})\n` +
+      `⏰ <b>Horário:</b> ${new Date().toLocaleString('pt-BR')}\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+    const inlineKeyboard = {
+      inline_keyboard: [
+        [
+          { text: '📊 Ver Métricas', callback_data: 'menu_metrics_24h' },
+          { text: '📋 Ver Últimos Leads', callback_data: 'menu_recent_leads' }
+        ],
+        [
+          { text: '📱 WhatsApp Configurado', callback_data: 'menu_whatsapp' },
+          { text: '⚙️ Painel de Controle', callback_data: 'menu_main' }
+        ]
+      ]
+    };
+
+    await this.sendMessage(targetChat, msg, inlineKeyboard);
+  }
+
   // Teclado Fixo Inferior de Botões (Nunca requer digitação de comandos)
   getPersistentReplyKeyboard() {
     return {

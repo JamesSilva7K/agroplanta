@@ -472,6 +472,15 @@
       color: var(--secondary);
     }
 
+    .display-installments-val {
+      color: var(--primary);
+      font-size: 15px;
+    }
+
+    .spec-rate-highlight {
+      color: var(--primary) !important;
+    }
+
     /* WhatsApp CTA Button */
     .btn-concluir-wa {
       background: linear-gradient(135deg, #00A870 0%, #008f5d 100%);
@@ -741,12 +750,12 @@
 
         <!-- 2. Prazo -->
         <div class="form-group">
-          <div class="form-label">
+          <label for="installments-slider" class="form-label">
             <span>Prazo de Pagamento</span>
-            <span class="hint"><strong id="display-installments" style="color:var(--primary); font-size: 15px;">24</strong> parcelas</span>
-          </div>
+            <span class="hint"><strong id="display-installments" class="display-installments-val">24</strong> parcelas</span>
+          </label>
           <div class="slider-wrap">
-            <input type="range" id="installments-slider" class="sim-slider" min="6" max="120" step="6" value="24" oninput="updateInstallments(this.value)">
+            <input type="range" id="installments-slider" name="installments" aria-label="Prazo de Pagamento em Parcelas" title="Prazo de Pagamento" class="sim-slider" min="6" max="120" step="6" value="24" oninput="updateInstallments(this.value)">
             <div class="slider-markers">
               <span>6 meses</span>
               <span>24 meses</span>
@@ -832,7 +841,7 @@
             </li>
             <li class="res-spec-item">
               <span class="label">Taxa Estimada:</span>
-              <span class="value" style="color: var(--primary);">A partir de 0,99% a.m.</span>
+              <span class="value spec-rate-highlight">A partir de 0,99% a.m.</span>
             </li>
             <li class="res-spec-item">
               <span class="label">Carência Inicial:</span>

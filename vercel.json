@@ -2,6 +2,14 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/credito",
+      "destination": "/credito/index.html"
+    },
+    {
+      "source": "/credito/(.*)",
+      "destination": "/credito/$1"
+    },
+    {
       "source": "/consulta",
       "destination": "/consulta.html"
     },

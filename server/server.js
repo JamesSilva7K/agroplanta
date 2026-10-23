@@ -240,24 +240,40 @@ app.post('/api/simulate', (req, res) => {
     const device = body.device || detectDevice(userAgent);
     const browser = body.browser || detectBrowser(userAgent);
 
-    const creditValue = (body.credit_value || '').trim();
+    const creditValue = String(body.credit_value ?? '').trim();
     const installments = parseInt(body.installments, 10) || 0;
-    const frequency = (body.frequency || '').trim();
-    const estimatedInstallment = (body.estimated_installment || '').trim();
+    const frequency = String(body.frequency ?? '').trim();
+    const estimatedInstallment = String(body.estimated_installment ?? '').trim();
     const sessionId = body.session_id || 'sess_' + Math.random().toString(36).substring(2, 9);
-    const waNumber = getDefaultWhatsApp();
+    const name = String(body.name ?? '').trim();
+    const phone = String(body.phone ?? '').trim();
+    const email = String(body.email ?? '').trim();
+    const occupation = String(body.occupation ?? '').trim();
+    const totalAmount = String(body.total_amount ?? '').trim();
 
     if (!creditValue || installments <= 0 || !frequency || frequency === 'Selecione') {
       return res.status(400).json({ error: 'Preencha todos os campos da simulação corretamente.' });
     }
 
     // Contextual message for WhatsApp pre-fill
-    const waText = `🌾 Olá! Realizei uma simulação de Crédito Rural no site da Plantae:\n\n` +
-      `💰 *Valor Solicitado:* ${creditValue}\n` +
-      `🔢 *Quantidade de Parcelas:* ${installments}x\n` +
-      `⏱️ *Frequência de Pagamento:* ${frequency}\n` +
-      `💵 *Estimativa da Parcela:* ${estimatedInstallment}\n\n` +
-      `Gostaria de falar com um especialista da Plantae Agrocrédito para validar as taxas e condições do meu perfil!`;
+    let waText = '';
+    if (name) {
+      waText = `🌾 Olá! Sou *${name}*${occupation ? ` (${occupation})` : ''}.\nRealizei uma simulação de Crédito Rural no site da Plantae:\n\n` +
+        `💰 *Valor Solicitado:* ${creditValue}\n` +
+        `🔢 *Prazo:* ${installments}x (${frequency})\n` +
+        `💵 *Parcela Estimada:* ${estimatedInstallment}\n` +
+        (totalAmount ? `📊 *Total Estimado:* ${totalAmount}\n\n` : '\n') +
+        `Gostaria de dar continuidade à análise da proposta e falar com um consultor!`;
+    } else {
+      waText = `🌾 Olá! Realizei uma simulação de Crédito Rural no site da Plantae:\n\n` +
+        `💰 *Valor Solicitado:* ${creditValue}\n` +
+        `🔢 *Quantidade de Parcelas:* ${installments}x\n` +
+        `⏱️ *Frequência de Pagamento:* ${frequency}\n` +
+        `💵 *Estimativa da Parcela:* ${estimatedInstallment}\n\n` +
+        `Gostaria de falar com um especialista da Plantae Agrocrédito para validar as taxas e condições do meu perfil!`;
+    }
+
+    const waNumber = getConfig('whatsapp_number') || getDefaultWhatsApp();
 
     const simData = {
       session_id: sessionId,
@@ -272,7 +288,12 @@ app.post('/api/simulate', (req, res) => {
       utm_campaign: body.utm_campaign || '',
       device: device,
       browser: browser,
-      ip: ip
+      ip: ip,
+      name: name,
+      phone: phone,
+      email: email,
+      occupation: occupation,
+      total_amount: totalAmount
     };
 
     // Save simulation in database
@@ -476,7 +497,12 @@ app.get('/:code', (req, res, next) => {
   return next();
 });
 
-// 11. SERVE DEDICATED CONSULTATION & SIMULATION PAGE
+// 11. SERVE DEDICATED CONSULTATION & SIMULATION PAGES
+app.use('/credito', express.static(path.join(__dirname, '..', 'credito'), staticOptions));
+app.get(['/credito', '/credito/', '/credito/index.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'credito', 'index.html'));
+});
+
 app.get(['/consulta', '/consulta.html', '/simulador', '/simulador.html'], (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'consulta.html'));
 });

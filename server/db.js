@@ -87,6 +87,11 @@ try {
 } catch (e) {
   // column already exists
 }
+try { db.exec(`ALTER TABLE simulations ADD COLUMN name TEXT;`); } catch (e) {}
+try { db.exec(`ALTER TABLE simulations ADD COLUMN phone TEXT;`); } catch (e) {}
+try { db.exec(`ALTER TABLE simulations ADD COLUMN email TEXT;`); } catch (e) {}
+try { db.exec(`ALTER TABLE simulations ADD COLUMN occupation TEXT;`); } catch (e) {}
+try { db.exec(`ALTER TABLE simulations ADD COLUMN total_amount TEXT;`); } catch (e) {}
 
 // Seed initial default configurations if not present
 const getCfgStmt = db.prepare('SELECT value FROM config WHERE key = ?');
@@ -302,8 +307,9 @@ module.exports = {
       INSERT INTO simulations (
         session_id, credit_value, installments, frequency,
         estimated_installment, whatsapp_number, whatsapp_message,
-        utm_source, utm_medium, utm_campaign, device, browser, ip
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        utm_source, utm_medium, utm_campaign, device, browser, ip,
+        name, phone, email, occupation, total_amount
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     return stmt.run(
       data.session_id || '',
@@ -318,7 +324,12 @@ module.exports = {
       data.utm_campaign || '',
       data.device || 'Desktop',
       data.browser || '',
-      data.ip || ''
+      data.ip || '',
+      data.name || '',
+      data.phone || '',
+      data.email || '',
+      data.occupation || '',
+      data.total_amount || ''
     );
   },
   getRecentSimulations(limit = 50) {

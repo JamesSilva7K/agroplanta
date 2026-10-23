@@ -204,11 +204,51 @@
           --e-global-color-secondary: ${secondary} !important;
           --e-global-color-accent: ${accent} !important;
         }
-        .elementor-button, .elementor-button-link {
+        .elementor-button:not(.elementor-element-ba0e491 .elementor-button),
+        .elementor-button-link:not(.elementor-element-ba0e491 .elementor-button) {
           background-color: ${primary} !important;
+          color: #FFFFFF !important;
         }
-        .elementor-element .elementor-button:hover {
+        .elementor-element .elementor-button:not(.elementor-element-ba0e491 .elementor-button):hover {
           background-color: ${accent} !important;
+          color: #FFFFFF !important;
+        }
+        /* Header Buttons: Visual Identity Guarantee (Image 3) */
+        .elementor-element-7cff2b1 .elementor-button,
+        .elementor-element-7cff2b1 a.elementor-button {
+          background-color: ${primary} !important;
+          color: #FFFFFF !important;
+          border: 1.5px solid ${primary} !important;
+          border-radius: 8px !important;
+          padding: 10px 18px !important;
+        }
+        .elementor-element-7cff2b1 .elementor-button .elementor-button-text {
+          color: #FFFFFF !important;
+          font-weight: 700 !important;
+        }
+        .elementor-element-7cff2b1 .elementor-button:hover {
+          background-color: ${accent} !important;
+          border-color: ${accent} !important;
+          color: #FFFFFF !important;
+        }
+        .elementor-element-ba0e491 .elementor-button,
+        .elementor-element-ba0e491 a.elementor-button {
+          background-color: #FFFFFF !important;
+          color: ${primary} !important;
+          border: 1.5px solid ${primary} !important;
+          border-radius: 8px !important;
+          padding: 10px 18px !important;
+        }
+        .elementor-element-ba0e491 .elementor-button .elementor-button-text {
+          color: ${primary} !important;
+          font-weight: 700 !important;
+        }
+        .elementor-element-ba0e491 .elementor-button:hover {
+          background-color: ${primary} !important;
+          color: #FFFFFF !important;
+        }
+        .elementor-element-ba0e491 .elementor-button:hover .elementor-button-text {
+          color: #FFFFFF !important;
         }
         .p-wa-btn {
           background: linear-gradient(135deg, ${primary} 0%, ${accent} 100%) !important;

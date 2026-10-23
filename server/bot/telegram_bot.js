@@ -176,33 +176,49 @@ class TelegramBotService {
     if (!alertsActive || !targetChat || !this.token) return;
 
     const devIcon = simData.device === 'Mobile' ? '📱' : '💻';
+    const hasLeadInfo = simData.name || simData.phone || simData.email;
+
+    let leadBlock = '';
+    if (hasLeadInfo) {
+      leadBlock = `👤 <b>Produtor / Lead:</b> <code>${simData.name || 'Não informado'}</code>\n` +
+        `📞 <b>WhatsApp do Produtor:</b> <code>${simData.phone || 'Não informado'}</code>\n` +
+        `📧 <b>E-mail:</b> <code>${simData.email || 'Não informado'}</code>\n` +
+        `🌾 <b>Ocupação:</b> <code>${simData.occupation || 'Produtor Rural'}</code>\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    }
+
     const msg = `🌾 <b>NOVA SIMULAÇÃO DE CRÉDITO RURAL!</b> 🌾\n` +
       `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-      `💰 <b>Valor do Crédito:</b> <code>${simData.credit_value}</code>\n` +
-      `🔢 <b>Quantidade de Parcelas:</b> <code>${simData.installments}x</code>\n` +
-      `⏱️ <b>Frequência de Pagamento:</b> <code>${simData.frequency}</code>\n` +
+      leadBlock +
+      `💰 <b>Valor Solicitado:</b> <code>${simData.credit_value}</code>\n` +
+      `🔢 <b>Plano:</b> <code>${simData.installments}x (${simData.frequency})</code>\n` +
       `💵 <b>Estimativa por Parcela:</b> <code>${simData.estimated_installment}</code>\n` +
+      (simData.total_amount ? `📊 <b>Total Estimado:</b> <code>${simData.total_amount}</code>\n` : '') +
       `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
       `📱 <b>Destino WhatsApp:</b> <code>+${simData.whatsapp_number}</code>\n` +
-      `💬 <b>Mensagem Direcionada ao WhatsApp:</b>\n<i>"${simData.whatsapp_message}"</i>\n\n` +
       `📍 <b>Origem / UTM:</b> ${simData.utm_source || 'Acesso Direto'}\n` +
       `${devIcon} <b>Dispositivo:</b> ${simData.device} (${simData.browser || 'Navegador'})\n` +
       `⏰ <b>Horário:</b> ${new Date().toLocaleString('pt-BR')}\n` +
       `━━━━━━━━━━━━━━━━━━━━━━━━━`;
 
-    const inlineKeyboard = {
-      inline_keyboard: [
-        [
-          { text: '📊 Ver Métricas', callback_data: 'menu_metrics_24h' },
-          { text: '📋 Ver Últimos Leads', callback_data: 'menu_recent_leads' }
-        ],
-        [
-          { text: '📱 WhatsApp Configurado', callback_data: 'menu_whatsapp' },
-          { text: '⚙️ Painel de Controle', callback_data: 'menu_main' }
-        ]
-      ]
-    };
+    const buttons = [];
+    if (simData.phone) {
+      const cleanLeadPhone = simData.phone.replace(/\D/g, '');
+      const waLeadTarget = cleanLeadPhone.startsWith('55') ? cleanLeadPhone : '55' + cleanLeadPhone;
+      buttons.push([
+        { text: '💬 Chamar Lead no WhatsApp', url: `https://wa.me/${waLeadTarget}` }
+      ]);
+    }
+    buttons.push([
+      { text: '📊 Ver Métricas', callback_data: 'menu_metrics_24h' },
+      { text: '📋 Ver Últimos Leads', callback_data: 'menu_recent_leads' }
+    ]);
+    buttons.push([
+      { text: '📱 WhatsApp Configurado', callback_data: 'menu_whatsapp' },
+      { text: '⚙️ Painel de Controle', callback_data: 'menu_main' }
+    ]);
 
+    const inlineKeyboard = { inline_keyboard: buttons };
     await this.sendMessage(targetChat, msg, inlineKeyboard);
   }
 

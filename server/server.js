@@ -435,8 +435,13 @@ app.get('/:code', (req, res, next) => {
   return next();
 });
 
-// 11. SERVE MAIN LANDING PAGE
-app.get('/', (req, res) => {
+// 11. SERVE DEDICATED CONSULTATION & SIMULATION PAGE
+app.get(['/consulta', '/consulta.html', '/simulador', '/simulador.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'consulta.html'));
+});
+
+// 12. SERVE MAIN LANDING PAGE
+app.get(['/', '/index.html'], (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 

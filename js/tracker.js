@@ -256,10 +256,10 @@
       if (isSimulationCta && !target.closest('#credit-simulator-form') && !target.closest('#sim-result-box')) {
         e.preventDefault();
         trackEvent('input_simulation_click', {
-          action_key: 'cta_scroll_simulador',
+          action_key: 'cta_ir_para_consulta',
           button_text: text || 'Simular Crédito'
         });
-        scrollToSimulator();
+        window.location.href = '/consulta';
         return;
       }
 
@@ -526,9 +526,9 @@
     const floatBtn = document.createElement('div');
     floatBtn.id = 'plantae-wa-float';
     floatBtn.innerHTML = `
-      <div class="p-wa-tooltip">
+      <a href="/consulta" class="p-wa-tooltip" title="Clique para fazer sua simulação">
         <span>Simular Crédito Rural 🌾</span>
-      </div>
+      </a>
       <button class="p-wa-btn" aria-label="Falar no WhatsApp" title="Falar no WhatsApp">
         <svg viewBox="0 0 32 32" width="34" height="34" fill="#ffffff">
           <path d="M16 2C8.28 2 2 8.28 2 16c0 2.58.7 5.04 2.03 7.18L2 30l7.04-1.99C11.12 29.28 13.52 30 16 30c7.72 0 14-6.28 14-14S23.72 2 16 2zm0 25.54c-2.22 0-4.38-.6-6.26-1.74l-.45-.27-4.64 1.31 1.33-4.52-.29-.47A11.45 11.45 0 014.54 16c0-6.32 5.14-11.46 11.46-11.46s11.46 5.14 11.46 11.46-5.14 11.54-11.46 11.54zm6.29-8.63c-.34-.17-2.04-1.01-2.36-1.12-.32-.12-.55-.17-.78.17-.23.35-.9 1.12-1.1 1.35-.2.23-.41.26-.75.09-.34-.17-1.45-.53-2.76-1.7-1.02-.91-1.71-2.03-1.91-2.37-.2-.35-.02-.53.15-.7.15-.15.35-.41.52-.61.17-.2.23-.35.35-.58.12-.23.06-.44-.03-.61-.09-.17-.78-1.89-1.07-2.58-.28-.68-.57-.59-.78-.6h-.67c-.23 0-.61.09-.93.44-.32.35-1.22 1.2-1.22 2.92s1.25 3.39 1.42 3.62c.17.23 2.45 3.75 5.95 5.25.83.36 1.48.57 1.99.73.84.27 1.6.23 2.2.14.67-.1 2.04-.83 2.33-1.64.29-.81.29-1.5.2-1.64-.08-.15-.31-.23-.65-.4z"/>
@@ -575,8 +575,15 @@
         font-weight: 600;
         box-shadow: 0 4px 15px rgba(1, 54, 68, 0.3);
         white-space: nowrap;
-        pointer-events: none;
+        text-decoration: none;
+        cursor: pointer;
+        pointer-events: auto;
         animation: p-float 3s ease-in-out infinite;
+        transition: background 0.2s ease, transform 0.2s ease;
+      }
+      .p-wa-tooltip:hover {
+        background: #00A870;
+        color: #ffffff;
       }
       @keyframes p-pulse {
         0% { box-shadow: 0 0 0 0 rgba(0, 168, 112, 0.6); }

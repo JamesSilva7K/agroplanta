@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simulador de Crédito Rural | Plantae Agrocrédito</title>
   <meta name="description" content="Faça sua simulação de crédito rural online na Plantae Agrocrédito. Recursos livres, prazos flexíveis alinhados à sua safra e atendimento humanizado.">
-  <link rel="icon" href="images/fav-pl.svg" sizes="32x32">
-  <link rel="stylesheet" href="css/opensans.css">
+  <link rel="icon" href="/images/fav-pl.svg" sizes="32x32">
+  <link rel="stylesheet" href="/css/opensans.css">
   
   <style>
     :root {
@@ -695,7 +695,7 @@
   <header class="consulta-header">
     <div class="nav-container">
       <a href="/" class="brand-logo" title="Plantae Agrocrédito">
-        <img src="images/plantae-log-1.svg" alt="Plantae Agrocrédito" width="202" height="30">
+        <img src="/images/plantae-log-1.svg" alt="Plantae Agrocrédito" width="202" height="30">
       </a>
       <div class="nav-actions">
         <a href="/" class="btn-back">
@@ -809,7 +809,25 @@
           </select>
         </div>
 
+      
+        <!-- 5. Dados do Produtor (Opcional para Proposta Nominal) -->
+        <div class="form-group" style="margin-top: 10px; padding-top: 16px; border-top: 1px dashed var(--border-color);">
+          <label class="form-label" for="lead-nome">
+            <span>Seu Nome Completo</span>
+            <span class="hint">Identificação do Produtor</span>
+          </label>
+          <input type="text" id="lead-nome" class="select-crop" placeholder="Ex: João da Silva" autocomplete="name">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="lead-phone">
+            <span>WhatsApp / Celular com DDD</span>
+            <span class="hint">Para envio direto da proposta</span>
+          </label>
+          <input type="tel" id="lead-phone" class="select-crop" placeholder="(18) 99999-9999" maxlength="15" autocomplete="tel">
+        </div>
       </div>
+
 
       <!-- Right Column: Live Result Box -->
       <div class="sim-result-card">
@@ -938,7 +956,7 @@
     <p>Plantae Agrocrédito — CNPJ: 35.551.187/0001-04 • Todos os direitos reservados. As operações de crédito estão sujeitas à análise cadastral e aprovação.</p>
   </footer>
 
-  <script src="js/tracker.js"></script>
+  <script src="/js/tracker.js"></script>
   <script>
     let currentAmount = 550000;
     let currentInstallments = 24;
@@ -1022,13 +1040,36 @@
       item.classList.toggle('open');
     }
 
+        // Phone mask
+    const phoneInput = document.getElementById('lead-phone');
+    if (phoneInput) {
+      phoneInput.addEventListener('input', function(e) {
+        let x = e.target.value.replace(/\D/g, '').slice(0, 11);
+        if (x.length > 10) {
+          x = x.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
+        } else if (x.length > 5) {
+          x = x.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+        } else if (x.length > 2) {
+          x = x.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
+        } else if (x.length > 0) {
+          x = x.replace(/^(\d*)/, '($1');
+        }
+        e.target.value = x;
+      });
+    }
+
     function submitConsultaToWhatsApp() {
       const crop = document.getElementById('crop-select').value;
       const amountStr = 'R$ ' + formatBRL(currentAmount);
       const planStr = document.getElementById('spec-plan').textContent;
       const parcelStr = document.getElementById('card-parcel-val').textContent;
+      const leadNome = (document.getElementById('lead-nome') ? document.getElementById('lead-nome').value.trim() : '');
+      const leadPhone = (document.getElementById('lead-phone') ? document.getElementById('lead-phone').value.trim() : '');
 
       const simPayload = {
+        name: leadNome,
+        phone: leadPhone,
+        occupation: crop,
         credit_value: amountStr,
         installments: currentInstallments,
         frequency: currentFrequency,
@@ -1050,8 +1091,9 @@
             window.location.href = data.redirect_url;
           } else {
             const waTarget = (window.PlantaeConfig && window.PlantaeConfig.whatsapp_number) || localStorage.getItem('plantae_synced_phone') || '5518981115624';
+            const nomePart = leadNome ? `Sou *${leadNome}* e fiz` : 'Fiz';
             const fallbackMsg = encodeURIComponent(
-              `🌾 Olá! Fiz uma consulta de crédito rural na Plantae:\n` +
+              `🌾 Olá! ${nomePart} uma consulta de crédito rural na Plantae:\n` +
               `• Valor Solicitado: ${amountStr}\n` +
               `• Plano: ${planStr}\n` +
               `• Segmento: ${crop}\n` +
@@ -1061,6 +1103,10 @@
             window.location.href = `https://wa.me/${waTarget}?text=${fallbackMsg}`;
           }
         })
+        .catch(() => {
+          window.location.href = '/r/whatsapp?action=cta_simular_credito';
+        });
+    })
         .catch(() => {
           window.location.href = '/r/whatsapp?action=cta_simular_credito';
         });

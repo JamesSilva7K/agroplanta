@@ -11,7 +11,7 @@
     },
     {
       "source": "/consulta",
-      "destination": "/consulta.html"
+      "destination": "/credito/index.html"
     },
     {
       "source": "/admin",

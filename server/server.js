@@ -504,7 +504,7 @@ app.get(['/credito', '/credito/', '/credito/index.html'], (req, res) => {
 });
 
 app.get(['/consulta', '/consulta.html', '/simulador', '/simulador.html'], (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'credito', 'index.html'));
+  res.redirect(301, '/credito');
 });
 
 // 12. SERVE MAIN LANDING PAGE

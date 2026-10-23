@@ -165,6 +165,36 @@ const defaultMessages = [
     action_key: 'cta_atendimento_geral',
     title: 'Atendimento Geral / Rodapé',
     message: '💬 Olá! Gostaria de atendimento comercial da equipe Plantae Agrocrédito.'
+  },
+  {
+    action_key: 'cta_na_midia',
+    title: 'Plantae na Mídia / Ler Matérias',
+    message: '📰 Olá! Vi as matérias e reportagens sobre a Plantae Agrocrédito e gostaria de entender melhor as soluções para o agronegócio.'
+  },
+  {
+    action_key: 'cta_quem_somos',
+    title: 'Institucional - Quem Somos',
+    message: '🌱 Olá! Estive no site da Plantae Agrocrédito e gostaria de conhecer mais sobre a atuação da empresa no agronegócio.'
+  },
+  {
+    action_key: 'cta_orientacao_financeira',
+    title: 'Orientação Financeira',
+    message: '🌾 Olá! Gostaria de receber orientação financeira personalizada para planejamento da minha safra.'
+  },
+  {
+    action_key: 'cta_correspondentes',
+    title: 'Correspondentes Autorizados',
+    message: '🤝 Olá! Gostaria de falar com o time de correspondentes da Plantae Agrocrédito.'
+  },
+  {
+    action_key: 'cta_governanca',
+    title: 'Governança Corporativa',
+    message: '📄 Olá! Gostaria de informações sobre governança corporativa da Plantae Agrocrédito.'
+  },
+  {
+    action_key: 'cta_documentos',
+    title: 'Documentos e Publicações',
+    message: '📋 Olá! Gostaria de solicitar documentos e publicações oficiais da Plantae Agrocrédito.'
   }
 ];
 

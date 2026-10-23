@@ -101,12 +101,18 @@
     }
   });
 
+  let activeWhatsAppNumber = '5511999999999';
+
   // 4. Dynamic Theme & Banner Engine (Supreme Admin Customizations)
   function applyDynamicThemeAndBanners() {
     fetch('/api/config')
       .then(function (res) { return res.json(); })
       .then(function (cfg) {
         if (!cfg) return;
+
+        if (cfg.whatsapp_number) {
+          activeWhatsAppNumber = cfg.whatsapp_number.replace(/\D/g, '');
+        }
 
         const primary = cfg.primary_color || '#00A870';
         const secondary = cfg.secondary_color || '#013644';
@@ -145,24 +151,71 @@
           ${cfg.banner_slide_4 ? `.elementor-element-3a816aa .elementor-repeater-item-8657dfc .swiper-slide-bg { background-image: url("${cfg.banner_slide_4}") !important; }` : ''}
           ${cfg.banner_mobile ? `.elementor-element-486e352 .elementor-repeater-item-8657dfc .swiper-slide-bg { background-image: url("${cfg.banner_mobile}") !important; }` : ''}
         `;
+
+        // Automatically sanitize and rewrite any remaining legacy links in DOM
+        rewriteLegacyLinks();
       })
       .catch(function () {});
   }
 
+  // Rewrite any legacy external links on the page directly to smart router
+  function rewriteLegacyLinks() {
+    try {
+      const anchors = document.querySelectorAll('a[href]');
+      anchors.forEach(function (a) {
+        const href = a.getAttribute('href') || '';
+        const lowerHref = href.toLowerCase();
+        const text = (a.textContent || '').trim();
+
+        // Skip internal portals, legitimate anchors, and telephone/mail links
+        if (lowerHref.includes('softsaaspif') || lowerHref.includes('ib.plantaeagrocredito')) return;
+        if (lowerHref.startsWith('#') || lowerHref.startsWith('tel:') || lowerHref.startsWith('mailto:')) return;
+        if (lowerHref.includes('instagram.com') || lowerHref.includes('facebook.com') || lowerHref.includes('linkedin.com')) return;
+
+        // If pointing to old landing pages or WordPress domain
+        if (lowerHref.includes('plantaeagrocredito.com.br') || lowerHref.includes('lp-whatsapp')) {
+          if (lowerHref.replace(/\/+$/, '') === 'https://plantaeagrocredito.com.br' || lowerHref === 'https://plantaeagrocredito.com.br/') {
+            a.setAttribute('href', '#');
+            return;
+          }
+          if (lowerHref.includes('simule') || lowerHref.includes('solicite')) {
+            a.setAttribute('href', '#credit-simulator');
+            return;
+          }
+          const actionKey = getActionKeyForElement(a, href, text);
+          a.setAttribute('href', '/r/whatsapp?action=' + encodeURIComponent(actionKey));
+        }
+      });
+    } catch (e) {}
+  }
+
   // 5. Map Elements to Context Action Keys
   function getActionKeyForElement(el, href, text) {
-    const lowerText = text.toLowerCase();
-    const lowerHref = href.toLowerCase();
+    const lowerText = (text || '').toLowerCase();
+    const lowerHref = (href || '').toLowerCase();
+
+    // Check if href already provides an explicit action
+    if (lowerHref.includes('/r/whatsapp')) {
+      const match = lowerHref.match(/[?&]action=([^&#]+)/i);
+      if (match && match[1]) return decodeURIComponent(match[1]);
+    }
 
     if (lowerText.includes('quero ser um parceiro')) return 'cta_quero_ser_parceiro';
     if (lowerText.includes('quero ser um cliente')) return 'cta_quero_ser_cliente';
     if (lowerText.includes('gerente')) return 'cta_falar_gerente';
     if (lowerText.includes('faça uma simulação') || lowerText.includes('faca uma simulacao')) return 'cta_faca_simulacao';
     if (lowerText.includes('simular crédito') || lowerText.includes('simule seu')) return 'cta_simular_credito';
+    if (lowerText.includes('ler matérias') || lowerText.includes('na mídia') || lowerHref.includes('na-midia')) return 'cta_na_midia';
+    if (lowerText.includes('quem somos') || lowerHref.includes('quem-somos')) return 'cta_quem_somos';
+    if (lowerText.includes('orientação financeira') || lowerHref.includes('blog')) return 'cta_orientacao_financeira';
+    if (lowerText.includes('correspondentes') || lowerHref.includes('correspondentes')) return 'cta_correspondentes';
+    if (lowerText.includes('governança') || lowerHref.includes('governanca')) return 'cta_governanca';
+    if (lowerText.includes('documentos') || lowerHref.includes('documentos')) return 'cta_documentos';
     if (lowerText.includes('consignagro') || lowerHref.includes('consignagro')) return 'cta_consignagro';
     if (lowerText.includes('seguro') || lowerHref.includes('seguros')) return 'cta_seguros';
     if (lowerText.includes('crédito rural') || lowerHref.includes('credito-rural')) return 'cta_credito_rural';
-    if (lowerText.includes('atendimento') || lowerText.includes('fale conosco')) return 'cta_atendimento_geral';
+    if (lowerText.includes('solicite seu') || lowerText.includes('solicitar crédito') || lowerHref.includes('solicite-seu-credito')) return 'cta_simular_credito';
+    if (lowerText.includes('atendimento') || lowerText.includes('fale conosco') || lowerHref.includes('fale-conosco')) return 'cta_atendimento_geral';
 
     if (lowerHref.includes('lp-whatsapp')) return 'cta_faca_simulacao';
 
@@ -176,26 +229,28 @@
       if (!target) return;
 
       const href = target.getAttribute('href') || '';
+      const lowerHref = href.toLowerCase();
       const text = (target.textContent || '').trim();
 
       // Check for Social Media Links
-      if (href.includes('instagram.com')) {
+      if (lowerHref.includes('instagram.com')) {
         trackEvent('output_social', { action_key: 'instagram', button_text: 'Instagram' });
         return;
       }
-      if (href.includes('linkedin.com')) {
+      if (lowerHref.includes('linkedin.com')) {
         trackEvent('output_social', { action_key: 'linkedin', button_text: 'LinkedIn' });
         return;
       }
-      if (href.includes('facebook.com')) {
+      if (lowerHref.includes('facebook.com')) {
         trackEvent('output_social', { action_key: 'facebook', button_text: 'Facebook' });
         return;
       }
 
-      // Check for Simulation CTAs (Scrolls smoothly to the Simulator Card as in Image 1 & 2)
+      // Check for Simulation CTAs (Scrolls smoothly to the Simulator Card)
       const isSimulationCta = 
-        href.includes('simule-seu-credito') ||
-        href.includes('solicite-seu-credito') ||
+        lowerHref.includes('simule-seu-credito') ||
+        lowerHref.includes('solicite-seu-credito') ||
+        lowerHref.includes('#credit-simulator') ||
         /simular|simulaç/i.test(text);
 
       if (isSimulationCta && !target.closest('#credit-simulator-form') && !target.closest('#sim-result-box')) {
@@ -210,14 +265,17 @@
 
       // Check for WhatsApp / Conversion CTAs
       const isConversionCta = 
-        href.includes('lp-whatsapp') ||
+        lowerHref.includes('/r/whatsapp') ||
+        lowerHref.includes('lp-whatsapp') ||
+        lowerHref.includes('plantaeagrocredito.com.br') ||
         target.classList.contains('elementor-button') ||
-        /crédito|consignagro|seguro|falar com um gerente|atendimento/i.test(text);
+        /crédito|consignagro|seguro|falar com um gerente|atendimento|matérias|quem somos|orientação|governança|documentos|correspondentes/i.test(text);
 
-      // Avoid intercepting internal anchors like #content or navigation dropdowns
-      if (href.startsWith('#') && !isConversionCta) return;
-      if (href.includes('softsaaspif') || href.includes('ib.plantaeagrocredito')) return; // Internet Banking / Ouvidoria
-      if (href.includes('politica-de-privacidade') || href.includes('governanca') || href.includes('documentos') || href.includes('correspondentes') || href.includes('na-midia')) return;
+      // Avoid intercepting internal authorized portals or privacy policy anchor
+      if (lowerHref.includes('softsaaspif') || lowerHref.includes('ib.plantaeagrocredito')) return;
+      if (lowerHref === '#' && !isConversionCta) return;
+      if (lowerHref.startsWith('#content') || lowerHref.startsWith('#elementor-action')) return;
+      if (lowerHref.includes('politica-de-privacidade') && !target.classList.contains('elementor-button')) return;
 
       if (isConversionCta) {
         e.preventDefault();
@@ -247,11 +305,11 @@
             if (data && data.redirect_url) {
               window.open(data.redirect_url, '_blank');
             } else {
-              window.open('https://wa.me/5511999999999', '_blank');
+              window.open('https://wa.me/' + activeWhatsAppNumber, '_blank');
             }
           })
           .catch(function () {
-            window.open('https://wa.me/5511999999999', '_blank');
+            window.open('https://wa.me/' + activeWhatsAppNumber, '_blank');
           });
       }
     }, true);
@@ -562,11 +620,11 @@
           if (data && data.redirect_url) {
             window.open(data.redirect_url, '_blank');
           } else {
-            window.open('https://wa.me/5511999999999', '_blank');
+            window.open('https://wa.me/' + activeWhatsAppNumber, '_blank');
           }
         })
         .catch(function () {
-          window.open('https://wa.me/5511999999999', '_blank');
+          window.open('https://wa.me/' + activeWhatsAppNumber, '_blank');
         });
     });
   }

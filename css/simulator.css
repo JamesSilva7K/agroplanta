@@ -1,0 +1,301 @@
+.plantae-simulator-section {
+    background-color: #ffffff !important;
+    padding: 70px 24px 80px 24px;
+    width: 100%;
+    position: relative;
+    box-sizing: border-box;
+    scroll-margin-top: 50px;
+  }
+  .plantae-sim-container {
+    max-width: 1140px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+  }
+  .plantae-sim-image-col {
+    flex: 1;
+    max-width: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .plantae-sim-img {
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    display: block;
+    object-fit: contain;
+  }
+  .plantae-sim-form-col {
+    flex: 1;
+    max-width: 430px;
+    width: 100%;
+  }
+  .plantae-simulator-card {
+    background: #f7f9fa;
+    border: 1px solid #eef2f5;
+    border-radius: 16px;
+    padding: 34px 28px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+  }
+  .plantae-simulator-card.sim-highlight {
+    animation: simCardPulse 1.2s ease-in-out;
+  }
+  @keyframes simCardPulse {
+    0%, 100% { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04); transform: scale(1); }
+    50% { box-shadow: 0 0 0 6px rgba(0, 168, 112, 0.35); transform: scale(1.02); }
+  }
+  .plantae-sim-field {
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  .plantae-sim-label {
+    display: block;
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #013644;
+    margin-bottom: 8px;
+    letter-spacing: -0.2px;
+  }
+  .plantae-sim-input {
+    width: 100%;
+    height: 48px;
+    background: #ffffff;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    padding: 0 14px;
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px;
+    color: #1e1e1e;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .plantae-sim-input::placeholder {
+    color: #9aa5b1;
+    font-size: 14.5px;
+  }
+  .plantae-sim-input:focus {
+    border-color: #00A870;
+    box-shadow: 0 0 0 3px rgba(0, 168, 112, 0.18);
+  }
+  .plantae-sim-input.input-error, .plantae-sim-select.input-error {
+    border-color: #e53e3e !important;
+    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.2) !important;
+  }
+  .plantae-sim-error-msg {
+    display: block;
+    color: #e53e3e;
+    font-size: 12px;
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin-top: 5px;
+    min-height: 16px;
+    font-weight: 500;
+  }
+  .plantae-select-wrapper {
+    position: relative;
+    width: 100%;
+  }
+  .plantae-sim-select {
+    width: 100%;
+    height: 48px;
+    background: #ffffff;
+    border: 1px solid #000000;
+    border-radius: 6px;
+    padding: 0 38px 0 14px;
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px;
+    color: #1e1e1e;
+    box-sizing: border-box;
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .plantae-select-wrapper::after {
+    content: "";
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #1e1e1e;
+    pointer-events: none;
+  }
+  .plantae-sim-select:focus {
+    border-color: #00A870;
+    box-shadow: 0 0 0 3px rgba(0, 168, 112, 0.18);
+  }
+  .plantae-sim-submit-btn {
+    width: 100%;
+    height: 48px;
+    background-color: #00A870;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 14.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: background-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .plantae-sim-submit-btn:hover {
+    background-color: #008f5d;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0, 168, 112, 0.35);
+  }
+  .plantae-sim-submit-btn:active {
+    transform: translateY(1px);
+  }
+  .plantae-sim-disclaimer {
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 11px;
+    line-height: 1.45;
+    color: #555e68;
+    margin: 16px 0 0 0;
+    text-align: left;
+  }
+
+  /* Result Box */
+  .plantae-sim-result {
+    display: none;
+    text-align: center;
+    animation: fadeInResult 0.35s ease;
+  }
+  @keyframes fadeInResult {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .sim-result-header {
+    margin-bottom: 16px;
+  }
+  .sim-result-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e6f7f0;
+    color: #00A870;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .sim-check-icon {
+    width: 16px;
+    height: 16px;
+  }
+  .sim-result-details {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+    text-align: left;
+  }
+  .sim-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+    color: #475569;
+  }
+  .sim-detail-row:last-child {
+    border-bottom: none;
+  }
+  .sim-detail-row.highlight-row {
+    background: #f8fafc;
+    margin: 6px -10px -6px -10px;
+    padding: 10px 10px;
+    border-radius: 6px;
+  }
+  .sim-detail-val {
+    font-weight: 700;
+    color: #013644;
+  }
+  .sim-detail-val.parcel-value {
+    color: #00A870;
+    font-size: 17px;
+  }
+  .plantae-sim-interest-btn {
+    width: 100%;
+    height: 50px;
+    background: linear-gradient(135deg, #00A870 0%, #008f5d 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(0, 168, 112, 0.35);
+    transition: all 0.2s ease;
+  }
+  .plantae-sim-interest-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 168, 112, 0.5);
+  }
+  .sim-wa-icon {
+    width: 20px;
+    height: 20px;
+  }
+  .sim-auto-redirect-note {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 10px;
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .sim-reset-link {
+    background: none;
+    border: none;
+    color: #013644;
+    font-size: 13px;
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-weight: 600;
+    margin-top: 14px;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .sim-reset-link:hover {
+    color: #00A870;
+  }
+
+  @media (max-width: 991px) {
+    .plantae-simulator-section {
+      padding: 40px 16px 50px 16px;
+    }
+    .plantae-sim-container {
+      flex-direction: column;
+      gap: 32px;
+    }
+    .plantae-sim-image-col {
+      max-width: 380px;
+    }
+    .plantae-sim-form-col {
+      max-width: 100%;
+    }
+  }

@@ -93,7 +93,7 @@ const getCfgStmt = db.prepare('SELECT value FROM config WHERE key = ?');
 const setCfgStmt = db.prepare('INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)');
 
 const defaultConfigs = {
-  whatsapp_number: '5511999999999',
+  whatsapp_number: process.env.DEFAULT_WHATSAPP_NUMBER || '5518981115624',
   bot_alerts_enabled: '1',
   redirects_active: '1',
   telegram_admin_id: process.env.TELEGRAM_ADMIN_CHAT_ID || '',

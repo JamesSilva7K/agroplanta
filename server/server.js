@@ -26,6 +26,45 @@ const { telegramBot } = require('./bot/telegram_bot');
 const { requireAdminAuth, generate7DigitToken, validateAdminToken } = require('./security');
 const { db } = require('./db');
 
+function getDefaultWhatsApp() {
+  return getConfig('whatsapp_number') || process.env.DEFAULT_WHATSAPP_NUMBER || '5518981115624';
+}
+
+function syncStaticConfigFile(updatedProps = {}) {
+  try {
+    const allConfigs = getAllConfigs ? getAllConfigs() : {};
+    const configData = {
+      whatsapp_number: updatedProps.whatsapp_number || allConfigs.whatsapp_number || process.env.DEFAULT_WHATSAPP_NUMBER || '5518981115624',
+      redirects_active: allConfigs.redirects_active !== '0',
+      bot_alerts_enabled: allConfigs.bot_alerts_enabled !== '0',
+      primary_color: allConfigs.primary_color || '#00A870',
+      secondary_color: allConfigs.secondary_color || '#013644',
+      accent_color: allConfigs.accent_color || '#006B59',
+      banner_slide_1: allConfigs.banner_slide_1 || 'images/hero-1.png',
+      banner_slide_2: allConfigs.banner_slide_2 || 'images/hero-2.png',
+      banner_slide_3: allConfigs.banner_slide_3 || 'images/hero-3.png',
+      banner_slide_4: allConfigs.banner_slide_4 || 'images/banner-davi.jpg',
+      banner_mobile: allConfigs.banner_mobile || 'images/plantae-hero-1-mb.png',
+      updated_at: new Date().toISOString(),
+      ...updatedProps
+    };
+
+    const rootDir = path.join(__dirname, '..');
+    const apiDir = path.join(rootDir, 'api');
+    if (!fs.existsSync(apiDir)) fs.mkdirSync(apiDir, { recursive: true });
+    fs.writeFileSync(path.join(apiDir, 'config.json'), JSON.stringify(configData, null, 2), 'utf8');
+
+    const dataDir = path.join(rootDir, 'data');
+    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+    fs.writeFileSync(path.join(dataDir, 'config.json'), JSON.stringify(configData, null, 2), 'utf8');
+  } catch (err) {
+    console.warn('[Sync] Could not sync static config file:', err.message);
+  }
+}
+
+// Initial sync on module load
+syncStaticConfigFile();
+
 const app = express();
 const PORT = process.env.PORT || 8080;
 
@@ -107,7 +146,7 @@ app.post('/api/track/event', (req, res) => {
 
     // If it's a WhatsApp conversion, fire instant Telegram lead notification
     if (eventData.type === 'output_whatsapp') {
-      const waNumber = getConfig('whatsapp_number') || '5511999999999';
+      const waNumber = getDefaultWhatsApp();
       telegramBot.notifyLead({
         ...eventData,
         whatsapp_number: waNumber
@@ -136,7 +175,7 @@ app.get('/r/whatsapp', (req, res) => {
 
     // Check if redirects are active
     const redirectsActive = getConfig('redirects_active') !== '0';
-    const waNumber = getConfig('whatsapp_number') || '5511999999999';
+    const waNumber = getDefaultWhatsApp();
 
     // Retrieve active context-aware message
     const msgRecord = getContextMessage(actionKey) || getContextMessage('cta_atendimento_geral');
@@ -188,7 +227,7 @@ app.get('/r/whatsapp', (req, res) => {
     return res.redirect(302, targetUrl);
   } catch (err) {
     console.error('Error handling redirect:', err);
-    return res.redirect(302, 'https://wa.me/5511999999999');
+    return res.redirect(302, 'https://wa.me/' + getDefaultWhatsApp());
   }
 });
 
@@ -206,7 +245,7 @@ app.post('/api/simulate', (req, res) => {
     const frequency = (body.frequency || '').trim();
     const estimatedInstallment = (body.estimated_installment || '').trim();
     const sessionId = body.session_id || 'sess_' + Math.random().toString(36).substring(2, 9);
-    const waNumber = getConfig('whatsapp_number') || '5511999999999';
+    const waNumber = getDefaultWhatsApp();
 
     if (!creditValue || installments <= 0 || !frequency || frequency === 'Selecione') {
       return res.status(400).json({ error: 'Preencha todos os campos da simulação corretamente.' });
@@ -308,7 +347,7 @@ app.post('/api/messages/:actionKey/reset', requireAdminAuth, (req, res) => {
 app.get('/api/config', (req, res) => {
   const allConfigs = getAllConfigs();
   return res.json({
-    whatsapp_number: allConfigs.whatsapp_number || '5511999999999',
+    whatsapp_number: allConfigs.whatsapp_number || getDefaultWhatsApp(),
     redirects_active: allConfigs.redirects_active !== '0',
     bot_alerts_enabled: allConfigs.bot_alerts_enabled !== '0',
     primary_color: allConfigs.primary_color || '#00A870',
@@ -334,6 +373,7 @@ app.post('/api/config', requireAdminAuth, (req, res) => {
   if (bot_alerts_enabled !== undefined) {
     setConfig('bot_alerts_enabled', bot_alerts_enabled ? '1' : '0');
   }
+  syncStaticConfigFile();
   return res.json({ success: true, message: 'Configuration saved' });
 });
 
@@ -350,6 +390,7 @@ app.post('/api/admin/config', requireAdminAuth, (req, res) => {
     }
   }
 
+  syncStaticConfigFile();
   return res.json({ success: true, message: 'Admin visual configurations updated' });
 });
 

@@ -101,61 +101,149 @@
     }
   });
 
-  let activeWhatsAppNumber = '5511999999999';
+  let activeWhatsAppNumber = '5518981115624';
 
-  // 4. Dynamic Theme & Banner Engine (Supreme Admin Customizations)
+  // Intelligent Brazilian Phone Formatter
+  function formatBrazilianPhone(raw) {
+    if (!raw) return '(18) 98111-5624';
+    const clean = String(raw).replace(/\D/g, '');
+    let num = clean;
+    if (num.startsWith('55') && num.length > 10) {
+      num = num.substring(2);
+    }
+    if (num.length === 11) {
+      return `(${num.substring(0, 2)}) ${num.substring(2, 7)}-${num.substring(7)}`;
+    }
+    if (num.length === 10) {
+      return `(${num.substring(0, 2)}) ${num.substring(2, 6)}-${num.substring(6)}`;
+    }
+    return raw;
+  }
+
+  // Intelligent Synchronizer across DOM and Storage
+  function syncPhoneDisplay(rawNumber) {
+    if (!rawNumber) return;
+    const clean = String(rawNumber).replace(/\D/g, '');
+    if (!clean) return;
+
+    activeWhatsAppNumber = clean;
+    try {
+      localStorage.setItem('plantae_synced_phone', clean);
+    } catch (e) {}
+
+    const formatted = formatBrazilianPhone(clean);
+
+    // 1. Explicit ID / Data Attribute targets
+    const explicitTargets = document.querySelectorAll('#plantae-atendimento-phone, [data-dynamic-phone], .plantae-phone-display');
+    explicitTargets.forEach(function (el) {
+      el.textContent = formatted;
+    });
+
+    // 2. Intelligent search in Elementor icon boxes for Atendimento
+    const iconBoxes = document.querySelectorAll('.elementor-widget-icon-box');
+    iconBoxes.forEach(function (box) {
+      const title = box.querySelector('.elementor-icon-box-title');
+      if (title && /atendimento/i.test(title.textContent)) {
+        const desc = box.querySelector('.elementor-icon-box-description');
+        if (desc) {
+          desc.textContent = formatted;
+          desc.setAttribute('data-dynamic-phone', 'true');
+        }
+        const links = box.querySelectorAll('a');
+        links.forEach(function (link) {
+          link.setAttribute('href', '/r/whatsapp?action=cta_atendimento_geral');
+          link.setAttribute('title', 'Atendimento: ' + formatted);
+        });
+      }
+    });
+
+    // 3. Expose globally for other scripts & consultation page
+    window.PlantaeConfig = window.PlantaeConfig || {};
+    window.PlantaeConfig.whatsapp_number = clean;
+    window.PlantaeConfig.formatted_phone = formatted;
+
+    try {
+      window.dispatchEvent(new CustomEvent('plantae:phone-updated', {
+        detail: { raw: clean, formatted: formatted }
+      }));
+    } catch (e) {}
+  }
+
+  // Instant pre-render from cache to avoid visual delay
+  try {
+    const cachedPhone = localStorage.getItem('plantae_synced_phone');
+    if (cachedPhone) {
+      syncPhoneDisplay(cachedPhone);
+    }
+  } catch (e) {}
+
+  // 4. Dynamic Theme, Phone & Banner Engine (Supreme Admin Customizations)
   function applyDynamicThemeAndBanners() {
+    function processConfig(cfg) {
+      if (!cfg) return;
+
+      if (cfg.whatsapp_number) {
+        syncPhoneDisplay(cfg.whatsapp_number);
+      }
+
+      const primary = cfg.primary_color || '#00A870';
+      const secondary = cfg.secondary_color || '#013644';
+      const accent = cfg.accent_color || '#006B59';
+
+      // Inject / Update dynamic style tag
+      let styleTag = document.getElementById('plantae-dynamic-theme-style');
+      if (!styleTag) {
+        styleTag = document.createElement('style');
+        styleTag.id = 'plantae-dynamic-theme-style';
+        document.head.appendChild(styleTag);
+      }
+
+      styleTag.textContent = `
+        :root {
+          --e-global-color-primary: ${primary} !important;
+          --e-global-color-secondary: ${secondary} !important;
+          --e-global-color-accent: ${accent} !important;
+        }
+        .elementor-button, .elementor-button-link {
+          background-color: ${primary} !important;
+        }
+        .elementor-element .elementor-button:hover {
+          background-color: ${accent} !important;
+        }
+        .p-wa-btn {
+          background: linear-gradient(135deg, ${primary} 0%, ${accent} 100%) !important;
+          box-shadow: 0 4px 20px ${primary}77 !important;
+        }
+        .p-wa-tooltip {
+          background: ${secondary} !important;
+        }
+        ${cfg.banner_slide_1 ? `.elementor-element-3a816aa .elementor-repeater-item-827dc45 .swiper-slide-bg { background-image: url("${cfg.banner_slide_1}") !important; }` : ''}
+        ${cfg.banner_slide_2 ? `.elementor-element-3a816aa .elementor-repeater-item-545cebe .swiper-slide-bg { background-image: url("${cfg.banner_slide_2}") !important; }` : ''}
+        ${cfg.banner_slide_3 ? `.elementor-element-3a816aa .elementor-repeater-item-592bb07 .swiper-slide-bg { background-image: url("${cfg.banner_slide_3}") !important; }` : ''}
+        ${cfg.banner_slide_4 ? `.elementor-element-3a816aa .elementor-repeater-item-8657dfc .swiper-slide-bg { background-image: url("${cfg.banner_slide_4}") !important; }` : ''}
+        ${cfg.banner_mobile ? `.elementor-element-486e352 .elementor-repeater-item-8657dfc .swiper-slide-bg { background-image: url("${cfg.banner_mobile}") !important; }` : ''}
+      `;
+
+      // Automatically sanitize and rewrite any remaining legacy links in DOM
+      rewriteLegacyLinks();
+    }
+
     fetch('/api/config')
-      .then(function (res) { return res.json(); })
-      .then(function (cfg) {
-        if (!cfg) return;
-
-        if (cfg.whatsapp_number) {
-          activeWhatsAppNumber = cfg.whatsapp_number.replace(/\D/g, '');
-        }
-
-        const primary = cfg.primary_color || '#00A870';
-        const secondary = cfg.secondary_color || '#013644';
-        const accent = cfg.accent_color || '#006B59';
-
-        // Inject / Update dynamic style tag
-        let styleTag = document.getElementById('plantae-dynamic-theme-style');
-        if (!styleTag) {
-          styleTag = document.createElement('style');
-          styleTag.id = 'plantae-dynamic-theme-style';
-          document.head.appendChild(styleTag);
-        }
-
-        styleTag.textContent = `
-          :root {
-            --e-global-color-primary: ${primary} !important;
-            --e-global-color-secondary: ${secondary} !important;
-            --e-global-color-accent: ${accent} !important;
-          }
-          .elementor-button, .elementor-button-link {
-            background-color: ${primary} !important;
-          }
-          .elementor-element .elementor-button:hover {
-            background-color: ${accent} !important;
-          }
-          .p-wa-btn {
-            background: linear-gradient(135deg, ${primary} 0%, ${accent} 100%) !important;
-            box-shadow: 0 4px 20px ${primary}77 !important;
-          }
-          .p-wa-tooltip {
-            background: ${secondary} !important;
-          }
-          ${cfg.banner_slide_1 ? `.elementor-element-3a816aa .elementor-repeater-item-827dc45 .swiper-slide-bg { background-image: url("${cfg.banner_slide_1}") !important; }` : ''}
-          ${cfg.banner_slide_2 ? `.elementor-element-3a816aa .elementor-repeater-item-545cebe .swiper-slide-bg { background-image: url("${cfg.banner_slide_2}") !important; }` : ''}
-          ${cfg.banner_slide_3 ? `.elementor-element-3a816aa .elementor-repeater-item-592bb07 .swiper-slide-bg { background-image: url("${cfg.banner_slide_3}") !important; }` : ''}
-          ${cfg.banner_slide_4 ? `.elementor-element-3a816aa .elementor-repeater-item-8657dfc .swiper-slide-bg { background-image: url("${cfg.banner_slide_4}") !important; }` : ''}
-          ${cfg.banner_mobile ? `.elementor-element-486e352 .elementor-repeater-item-8657dfc .swiper-slide-bg { background-image: url("${cfg.banner_mobile}") !important; }` : ''}
-        `;
-
-        // Automatically sanitize and rewrite any remaining legacy links in DOM
-        rewriteLegacyLinks();
+      .then(function (res) {
+        if (!res.ok) throw new Error('API config status ' + res.status);
+        return res.json();
       })
-      .catch(function () {});
+      .then(processConfig)
+      .catch(function () {
+        // Fallback for static servers like Vercel
+        fetch('/api/config.json')
+          .then(function (r) {
+            if (!r.ok) throw new Error('Static config status ' + r.status);
+            return r.json();
+          })
+          .then(processConfig)
+          .catch(function () {});
+      });
   }
 
   // Rewrite any legacy external links on the page directly to smart router

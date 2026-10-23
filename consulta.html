@@ -1049,6 +1049,7 @@
           if (data && data.redirect_url) {
             window.location.href = data.redirect_url;
           } else {
+            const waTarget = (window.PlantaeConfig && window.PlantaeConfig.whatsapp_number) || localStorage.getItem('plantae_synced_phone') || '5518981115624';
             const fallbackMsg = encodeURIComponent(
               `🌾 Olá! Fiz uma consulta de crédito rural na Plantae:\n` +
               `• Valor Solicitado: ${amountStr}\n` +
@@ -1057,7 +1058,7 @@
               `• Parcela Estimada: ${parcelStr}\n` +
               `Gostaria de formalizar a proposta com um consultor.`
             );
-            window.location.href = `https://wa.me/5511999999999?text=${fallbackMsg}`;
+            window.location.href = `https://wa.me/${waTarget}?text=${fallbackMsg}`;
           }
         })
         .catch(() => {

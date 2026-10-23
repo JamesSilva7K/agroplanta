@@ -4,9 +4,12 @@
  * Interface 100% orientada a botões interativos (Inline Keyboards) em Português.
  */
 
+const fs = require('node:fs');
+const path = require('node:path');
 const { 
   getConfig, 
   setConfig, 
+  getAllConfigs,
   getContextMessages, 
   getContextMessage, 
   updateContextMessage, 
@@ -16,6 +19,52 @@ const {
 } = require('../db');
 const { getMetrics } = require('../analytics');
 const { generate7DigitToken, revokeAllAdminSessions } = require('../security');
+
+function formatPhoneDisplay(raw) {
+  if (!raw) return '(18) 98111-5624';
+  const clean = String(raw).replace(/\D/g, '');
+  let core = clean;
+  if (core.startsWith('55') && core.length > 10) core = core.substring(2);
+  if (core.length === 11) {
+    return `(${core.substring(0, 2)}) ${core.substring(2, 7)}-${core.substring(7)}`;
+  }
+  if (core.length === 10) {
+    return `(${core.substring(0, 2)}) ${core.substring(2, 6)}-${core.substring(6)}`;
+  }
+  return raw;
+}
+
+function syncStaticConfigFile(updatedProps = {}) {
+  try {
+    const allConfigs = getAllConfigs ? getAllConfigs() : {};
+    const configData = {
+      whatsapp_number: updatedProps.whatsapp_number || allConfigs.whatsapp_number || process.env.DEFAULT_WHATSAPP_NUMBER || '5518981115624',
+      redirects_active: allConfigs.redirects_active !== '0',
+      bot_alerts_enabled: allConfigs.bot_alerts_enabled !== '0',
+      primary_color: allConfigs.primary_color || '#00A870',
+      secondary_color: allConfigs.secondary_color || '#013644',
+      accent_color: allConfigs.accent_color || '#006B59',
+      banner_slide_1: allConfigs.banner_slide_1 || 'images/hero-1.png',
+      banner_slide_2: allConfigs.banner_slide_2 || 'images/hero-2.png',
+      banner_slide_3: allConfigs.banner_slide_3 || 'images/hero-3.png',
+      banner_slide_4: allConfigs.banner_slide_4 || 'images/banner-davi.jpg',
+      banner_mobile: allConfigs.banner_mobile || 'images/plantae-hero-1-mb.png',
+      updated_at: new Date().toISOString(),
+      ...updatedProps
+    };
+
+    const rootDir = path.join(__dirname, '..', '..');
+    const apiDir = path.join(rootDir, 'api');
+    if (!fs.existsSync(apiDir)) fs.mkdirSync(apiDir, { recursive: true });
+    fs.writeFileSync(path.join(apiDir, 'config.json'), JSON.stringify(configData, null, 2), 'utf8');
+
+    const dataDir = path.join(rootDir, 'data');
+    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+    fs.writeFileSync(path.join(dataDir, 'config.json'), JSON.stringify(configData, null, 2), 'utf8');
+  } catch (err) {
+    console.warn('[Sync] Could not sync static config file:', err.message);
+  }
+}
 
 class TelegramBotService {
   constructor() {
@@ -302,11 +351,15 @@ class TelegramBotService {
 
   // Configuração do WhatsApp
   async showWhatsAppConfig(chatId, messageId) {
-    const waNumber = getConfig('whatsapp_number') || '5511999999999';
-    const text = `📱 <b>GERENCIAMENTO DO NÚMERO DE WHATSAPP</b>\n` +
+    const waNumber = getConfig('whatsapp_number') || process.env.DEFAULT_WHATSAPP_NUMBER || '5518981115624';
+    const displayPhone = formatPhoneDisplay(waNumber);
+    const text = `📱 <b>GERENCIAMENTO DO NÚMERO DE ATENDIMENTO</b>\n` +
       `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-      `Todos os leads que clicarem em botões de simulação e crédito serão direcionados para este número.\n\n` +
-      `📞 <b>Número Atual:</b> <code>+${waNumber}</code>\n` +
+      `Este número é sincronizado automaticamente em tempo real em todo o site:\n` +
+      `• Rodapé (Atendimento): <code>${displayPhone}</code>\n` +
+      `• Destino Internacional: <code>+${waNumber}</code>\n` +
+      `• Simulação de Crédito (/consulta)\n` +
+      `• Todos os botões do WhatsApp\n\n` +
       `🔗 <b>Link Direto de Teste:</b> https://wa.me/${waNumber}\n\n` +
       `<i>Clique abaixo para alterar o número ou retornar.</i>`;
 
@@ -711,19 +764,38 @@ class TelegramBotService {
 
     // State machine: Editing WhatsApp Number
     if (userState && userState.state === 'WAITING_WHATSAPP_NUMBER') {
-      const cleanNum = rawText.replace(/\D/g, '');
-      if (cleanNum.length < 10 || cleanNum.length > 15) {
+      let cleanNum = rawText.replace(/\D/g, '');
+      // Auto-prepend Brazil DDI (55) if user provided only DDD + Number (10 or 11 digits)
+      if (cleanNum.length === 10 || cleanNum.length === 11) {
+        cleanNum = '55' + cleanNum;
+      }
+
+      if (cleanNum.length < 12 || cleanNum.length > 15) {
         await this.sendMessage(
           chatId, 
-          '⚠️ <b>Número inválido!</b> Digite o número com DDI e DDD (exemplo: <code>5511999999999</code>):'
+          '⚠️ <b>Número inválido!</b> Digite o número com DDD (exemplo: <code>(18) 98111-5624</code> ou <code>5518981115624</code>):'
         );
         return;
       }
+
       setConfig('whatsapp_number', cleanNum);
+      syncStaticConfigFile({ whatsapp_number: cleanNum });
       delete this.userStates[chatId];
+
+      const displayPhone = formatPhoneDisplay(cleanNum);
+
       await this.sendMessage(
         chatId, 
-        `✅ <b>Número de WhatsApp atualizado com sucesso para:</b> <code>+${cleanNum}</code>`
+        `✅ <b>NÚMERO SINCRONIZADO COM SUCESSO!</b>\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `📞 <b>Exibição no Site:</b> <code>${displayPhone}</code>\n` +
+        `📱 <b>Destino Internacional:</b> <code>+${cleanNum}</code>\n` +
+        `🔗 <b>Link Direto:</b> https://wa.me/${cleanNum}\n\n` +
+        `⚡ <b>Sincronização em Tempo Real Ativa:</b>\n` +
+        `• Rodapé (Atendimento): atualizado automaticamente\n` +
+        `• Simulação de Crédito (/consulta): atualizado\n` +
+        `• Roteador (/r/whatsapp): novos cliques redirecionados para este número\n` +
+        `• Cache inteligente local: propagado para todos os visitantes`
       );
       await this.showMainMenu(chatId);
       return;
@@ -814,7 +886,7 @@ class TelegramBotService {
 
     // 12. Testar Lead
     if (text.includes('testar') || text.includes('teste')) {
-      const waNumber = getConfig('whatsapp_number') || '5511999999999';
+      const waNumber = getConfig('whatsapp_number') || process.env.DEFAULT_WHATSAPP_NUMBER || '5518981115624';
       await this.notifyLead({
         button_text: 'Faça uma Simulação (Teste por Botão)',
         action_key: 'cta_faca_simulacao',
@@ -959,7 +1031,7 @@ class TelegramBotService {
     }
 
     if (data === 'action_test_lead') {
-      const waNumber = getConfig('whatsapp_number') || '5511999999999';
+      const waNumber = getConfig('whatsapp_number') || process.env.DEFAULT_WHATSAPP_NUMBER || '5518981115624';
       await this.notifyLead({
         button_text: 'Faça uma Simulação (Teste)',
         action_key: 'cta_faca_simulacao',

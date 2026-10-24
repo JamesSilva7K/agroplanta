@@ -2,6 +2,14 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/r/whatsapp",
+      "destination": "/api/r/whatsapp"
+    },
+    {
+      "source": "/r/whatsapp/(.*)",
+      "destination": "/api/r/whatsapp?$1"
+    },
+    {
       "source": "/css/8b87ddb693cffeb08e0834cdcfddb169.css",
       "destination": "/credito/css/8b87ddb693cffeb08e0834cdcfddb169.css"
     },
@@ -48,7 +56,19 @@
         },
         {
           "key": "X-Frame-Options",
-          "value": "DENY"
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains"
         }
       ]
     }

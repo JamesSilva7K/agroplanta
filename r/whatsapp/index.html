@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conectando ao WhatsApp Plantae Agrocrédito...</title>
+  <link rel="icon" href="/images/fav-pl.svg" type="image/svg+xml">
+  <style>
+    body {
+      background: #013644;
+      color: #FFFFFF;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      text-align: center;
+      padding: 20px;
+    }
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255, 255, 255, 0.2);
+      border-top-color: #00A870;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    h2 { font-size: 20px; margin-bottom: 8px; font-weight: 700; }
+    p { font-size: 14px; color: #94A3B8; margin-bottom: 24px; }
+    a.btn-manual {
+      background: #00A870;
+      color: #FFFFFF;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 4px 15px rgba(0, 168, 112, 0.4);
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <div class="spinner"></div>
+  <h2>Conectando com o Especialista Plantae...</h2>
+  <p>Você está sendo redirecionado para o WhatsApp oficial de atendimento.</p>
+  <a id="btnManual" href="https://wa.me/5518981115624" class="btn-manual">Clique aqui se não abrir automaticamente</a>
+
+  <script>
+    (function() {
+      var defaultPhone = "5518981115624";
+      var params = new URLSearchParams(window.location.search);
+      var action = params.get('action') || 'cta_atendimento_geral';
+
+      var msgs = {
+        cta_simular_credito: '🌾 Olá! Gostaria de simular as taxas e condições de Crédito Rural para a minha propriedade.',
+        cta_faca_simulacao: '🌾 Olá! Gostaria de fazer uma simulação de Crédito Rural com um gerente Plantae.',
+        cta_falar_gerente: '🌾 Olá! Gostaria de falar com um gerente da Plantae Agrocrédito sobre financiamento.',
+        cta_credito_rural: '🌾 Olá! Gostaria de mais informações sobre as linhas de Crédito Rural da Plantae.',
+        cta_consignagro: '🌾 Olá! Gostaria de conhecer o ConsignAgro e as condições para o agronegócio.',
+        cta_seguros: '🌾 Olá! Gostaria de informações sobre os Seguros Agrícolas e Rurais da Plantae.',
+        cta_quem_somos: '🌾 Olá! Gostaria de conhecer mais sobre a história e os serviços da Plantae Agrocrédito.',
+        cta_orientacao_financeira: '🌾 Olá! Gostaria de orientações financeiras sobre planejamento de safra e crédito.',
+        cta_governanca: '🌾 Olá! Gostaria de solicitar informações de governança da Plantae Agrocrédito.',
+        cta_documentos: '🌾 Olá! Gostaria de consultar documentos e publicações oficiais da Plantae Agrocrédito.',
+        cta_correspondentes: '🌾 Olá! Gostaria de informações sobre os correspondentes autorizados da Plantae.',
+        cta_na_midia: '🌾 Olá! Vi a matéria sobre a Plantae Agrocrédito e gostaria de atendimento.',
+        cta_quero_ser_parceiro: '🌾 Olá! Gostaria de ser um parceiro comercial ou correspondente da Plantae Agrocrédito.',
+        cta_quero_ser_cliente: '🌾 Olá! Tenho interesse em ser cliente da Plantae e acessar recursos livres.',
+        cta_atendimento_geral: '🌾 Olá! Gostaria de atendimento da equipe Plantae Agrocrédito.'
+      };
+
+      var msg = params.get('msg') || msgs[action] || msgs.cta_atendimento_geral;
+
+      function doRedirect(phone) {
+        var clean = String(phone || defaultPhone).replace(/\D/g, '');
+        var url = "https://wa.me/" + clean + "?text=" + encodeURIComponent(msg);
+        var btn = document.getElementById('btnManual');
+        if (btn) btn.href = url;
+        window.location.replace(url);
+      }
+
+      // Check cached phone first
+      var cached = localStorage.getItem('plantae_synced_phone');
+      if (cached) {
+        doRedirect(cached);
+        return;
+      }
+
+      // Fetch dynamic config
+      fetch('/api/config.json')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var p = (data && data.whatsapp_number) ? data.whatsapp_number : defaultPhone;
+          doRedirect(p);
+        })
+        .catch(function() {
+          doRedirect(defaultPhone);
+        });
+    })();
+  </script>
+</body>
+</html>

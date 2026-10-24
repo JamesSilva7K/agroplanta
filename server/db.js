@@ -79,6 +79,40 @@ db.exec(`
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
   CREATE INDEX IF NOT EXISTS idx_simulations_created ON simulations(created_at);
+
+  CREATE TABLE IF NOT EXISTS system_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    level TEXT NOT NULL,
+    category TEXT NOT NULL,
+    message TEXT NOT NULL,
+    details TEXT,
+    session_id TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_logs_created ON system_logs(created_at);
+  CREATE INDEX IF NOT EXISTS idx_logs_level ON system_logs(level);
+
+  CREATE TABLE IF NOT EXISTS lead_steps (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    step_number INTEGER NOT NULL,
+    step_name TEXT NOT NULL,
+    lead_name TEXT,
+    phone TEXT,
+    email TEXT,
+    document TEXT,
+    company_name TEXT,
+    credit_value TEXT,
+    installments INTEGER,
+    frequency TEXT,
+    estimated_installment TEXT,
+    location TEXT,
+    crop TEXT,
+    metadata TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_lead_steps_session ON lead_steps(session_id);
+  CREATE INDEX IF NOT EXISTS idx_lead_steps_created ON lead_steps(created_at);
 `);
 
 // Safe column addition for existing db
@@ -401,5 +435,115 @@ module.exports = {
     const nextIdx = (currentIdx + 1) % tokens.length;
     module.exports.setConfig('cnpj_active_index', String(nextIdx));
     return { oldIndex: currentIdx, newIndex: nextIdx, token: tokens[nextIdx] };
+  },
+
+  // --- SYSTEM LOGS ENGINE ---
+  insertLog(level, category, message, details = null, session_id = null) {
+    try {
+      const stmt = db.prepare(`
+        INSERT INTO system_logs (level, category, message, details, session_id)
+        VALUES (?, ?, ?, ?, ?)
+      `);
+      return stmt.run(
+        String(level || 'INFO').toUpperCase(),
+        String(category || 'GENERAL').toUpperCase(),
+        String(message || ''),
+        details ? (typeof details === 'object' ? JSON.stringify(details) : String(details)) : null,
+        session_id ? String(session_id) : null
+      );
+    } catch (e) {
+      console.error('Failed to insert log into DB:', e.message);
+      return null;
+    }
+  },
+  getRecentLogs(limit = 20, minLevel = null) {
+    try {
+      if (minLevel) {
+        return db.prepare(`
+          SELECT * FROM system_logs 
+          WHERE level = ? 
+          ORDER BY id DESC LIMIT ?
+        `).all(String(minLevel).toUpperCase(), limit);
+      }
+      return db.prepare('SELECT * FROM system_logs ORDER BY id DESC LIMIT ?').all(limit);
+    } catch (e) {
+      return [];
+    }
+  },
+  getLogsSummary(hours = 24) {
+    try {
+      const since = new Date(Date.now() - hours * 3600 * 1000).toISOString();
+      const rows = db.prepare(`
+        SELECT level, COUNT(*) as count 
+        FROM system_logs 
+        WHERE created_at >= ?
+        GROUP BY level
+      `).all(since);
+      const summary = { errors: 0, warnings: 0, info: 0, total: 0 };
+      for (const r of rows) {
+        summary.total += r.count;
+        if (r.level === 'ERROR' || r.level === 'CRITICAL') summary.errors += r.count;
+        else if (r.level === 'WARN' || r.level === 'WARNING') summary.warnings += r.count;
+        else summary.info += r.count;
+      }
+      return summary;
+    } catch (e) {
+      return { errors: 0, warnings: 0, info: 0, total: 0 };
+    }
+  },
+
+  // --- LEAD ADVANCED STEP FUNNEL TRACKING ---
+  recordLeadStep(stepData) {
+    try {
+      const stmt = db.prepare(`
+        INSERT INTO lead_steps (
+          session_id, step_number, step_name, lead_name, phone, email,
+          document, company_name, credit_value, installments, frequency,
+          estimated_installment, location, crop, metadata
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      return stmt.run(
+        stepData.session_id || 'sess_' + Date.now(),
+        parseInt(stepData.step_number || stepData.step || 1, 10),
+        stepData.step_name || `Etapa ${stepData.step_number || stepData.step}`,
+        stepData.lead_name || stepData.name || null,
+        stepData.phone || null,
+        stepData.email || null,
+        stepData.document || null,
+        stepData.company_name || null,
+        stepData.credit_value ? String(stepData.credit_value) : null,
+        parseInt(stepData.installments, 10) || null,
+        stepData.frequency || null,
+        stepData.estimated_installment ? String(stepData.estimated_installment) : null,
+        stepData.location || null,
+        stepData.crop || null,
+        stepData.metadata ? (typeof stepData.metadata === 'object' ? JSON.stringify(stepData.metadata) : String(stepData.metadata)) : null
+      );
+    } catch (e) {
+      console.error('Failed to record lead step in DB:', e.message);
+      return null;
+    }
+  },
+  getRecentLeadSteps(limit = 15) {
+    try {
+      return db.prepare('SELECT * FROM lead_steps ORDER BY id DESC LIMIT ?').all(limit);
+    } catch (e) {
+      return [];
+    }
+  },
+  getLeadFunnelStats(hours = 24) {
+    try {
+      const since = new Date(Date.now() - hours * 3600 * 1000).toISOString();
+      const rows = db.prepare(`
+        SELECT step_number, COUNT(DISTINCT session_id) as unique_sessions, COUNT(*) as total_hits
+        FROM lead_steps
+        WHERE created_at >= ?
+        GROUP BY step_number
+        ORDER BY step_number ASC
+      `).all(since);
+      return rows;
+    } catch (e) {
+      return [];
+    }
   }
 };

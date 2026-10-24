@@ -1763,6 +1763,20 @@ a.btn-acesse-conta:hover span {
 
     goToStep(2);
 
+    // Track lead step 1 (Valor e Prazo Definidos)
+    fetch("/api/track/lead-step", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        step: 1,
+        step_name: "Definição de Valor e Prazo",
+        credit_value: "R$ " + formatBRL(val),
+        installments: parcelas,
+        frequency: selectFreq.options[selectFreq.selectedIndex].text,
+        session_id: localStorage.getItem("plantae_session_id") || ("sess_" + Date.now())
+      })
+    }).catch(function() {});
+
     if (window.PlantaeTracker && typeof window.PlantaeTracker.logEvent === 'function') {
       window.PlantaeTracker.logEvent('simulador_step1_concluido', { valor: val, parcelas: parcelas });
     }
@@ -1892,6 +1906,29 @@ a.btn-acesse-conta:hover span {
 
       goToStep(3);
 
+      // Track lead step 3 (Proposta Calculada e Visualizada)
+      fetch("/api/track/lead-step", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          step: 3,
+          step_name: "Proposta Calculada e Visualizada",
+          name: nome,
+          phone: cleanTel,
+          email: email,
+          document: documentoFinal,
+          company_name: empresaFinal,
+          credit_value: "R$ " + formatBRL(val),
+          installments: parcelas,
+          frequency: selectFreq.options[selectFreq.selectedIndex].text,
+          estimated_installment: "R$ " + formatBRL(valorParcela),
+          total_amount: "R$ " + formatBRL(totalEstimado),
+          location: leadLocalizacao.value.trim(),
+          crop: leadCultura.value,
+          session_id: localStorage.getItem("plantae_session_id") || ("sess_" + Date.now())
+        })
+      }).catch(function() {});
+
       // Pre-save lead in background
       fetch("/api/simulate", {
         method: "POST",
@@ -1920,6 +1957,28 @@ a.btn-acesse-conta:hover span {
       const sess = window.PlantaeTracker.getSessionData();
       Object.assign(dadosUltimaSimulacao, sess);
     }
+
+    // Track lead step 4 (Conversão Final para WhatsApp)
+    fetch("/api/track/lead-step", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        step: 4,
+        step_name: "Conversão Final no WhatsApp",
+        name: dadosUltimaSimulacao.name,
+        phone: dadosUltimaSimulacao.phone,
+        email: dadosUltimaSimulacao.email,
+        document: dadosUltimaSimulacao.document,
+        company_name: dadosUltimaSimulacao.company_name,
+        credit_value: "R$ " + formatBRL(dadosUltimaSimulacao.credit_value),
+        installments: dadosUltimaSimulacao.installments,
+        frequency: dadosUltimaSimulacao.frequency,
+        estimated_installment: "R$ " + formatBRL(dadosUltimaSimulacao.estimated_installment),
+        location: dadosUltimaSimulacao.location,
+        crop: dadosUltimaSimulacao.crop,
+        session_id: localStorage.getItem("plantae_session_id") || ("sess_" + Date.now())
+      })
+    }).catch(function() {});
 
     const defaultMsg = 
       `🌾 Olá! Sou *${dadosUltimaSimulacao.name}* da empresa *${dadosUltimaSimulacao.company_name}* (${dadosUltimaSimulacao.document}).\n` +

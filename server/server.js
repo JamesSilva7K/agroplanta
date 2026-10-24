@@ -19,7 +19,9 @@ const {
   updateContextMessage, 
   resetContextMessage,
   saveSimulation,
-  getRecentSimulations
+  getRecentSimulations,
+  recordLeadStep,
+  insertLog
 } = require('./db');
 const { getMetrics } = require('./analytics');
 const { telegramBot } = require('./bot/telegram_bot');
@@ -158,6 +160,55 @@ app.post('/api/track/event', (req, res) => {
   } catch (err) {
     console.error('Error tracking event:', err);
     return res.status(500).json({ error: 'Failed to record event' });
+  }
+});
+
+// 1.1 ADVANCED LEAD FUNNEL STEP TRACKING ENDPOINT
+app.post('/api/track/lead-step', (req, res) => {
+  try {
+    const body = req.body || {};
+    const userAgent = req.headers['user-agent'] || '';
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+    const device = body.device || detectDevice(userAgent);
+    const browser = body.browser || detectBrowser(userAgent);
+
+    const stepData = {
+      session_id: body.session_id || 'sess_' + Math.random().toString(36).substring(2, 9),
+      step_number: parseInt(body.step_number || body.step || 1, 10),
+      step_name: body.step_name || `Etapa ${body.step_number || body.step}`,
+      lead_name: body.name || body.lead_name || '',
+      phone: body.phone || '',
+      email: body.email || '',
+      document: body.document || body.cnpj || body.cpf || '',
+      company_name: body.company_name || body.razao_social || '',
+      credit_value: body.credit_value ? String(body.credit_value) : '',
+      installments: parseInt(body.installments, 10) || 0,
+      frequency: body.frequency || '',
+      estimated_installment: body.estimated_installment ? String(body.estimated_installment) : '',
+      total_amount: body.total_amount ? String(body.total_amount) : '',
+      location: body.location || '',
+      crop: body.crop || '',
+      utm_source: body.utm_source || '',
+      utm_medium: body.utm_medium || '',
+      utm_campaign: body.utm_campaign || '',
+      device: device,
+      browser: browser,
+      ip: ip,
+      metadata: body.metadata || null
+    };
+
+    // Save in DB
+    recordLeadStep(stepData);
+
+    // Notify Telegram Admin in real time!
+    telegramBot.notifyLeadStep(stepData).catch(err => {
+      console.error('Error sending lead step notification:', err.message);
+    });
+
+    return res.json({ success: true, step: stepData.step_number });
+  } catch (err) {
+    console.error('Error tracking lead step:', err);
+    return res.status(500).json({ error: 'Failed to record lead step' });
   }
 });
 
@@ -347,9 +398,53 @@ app.all('/api/cnpj', async (req, res) => {
     }
 
     const result = await consultCnpjWithAutoFallback(cnpjRaw, leadInfo, telegramBot);
+
+    // Notify lead progress in Etapa 2 if valid CNPJ found
+    if (result && result.success && result.result) {
+      const cd = result.result;
+      const userAgent = req.headers['user-agent'] || '';
+      telegramBot.notifyLeadStep({
+        session_id: leadInfo.session_id || 'sess_' + Date.now(),
+        step_number: 2,
+        step_name: 'Consulta de CNPJ na Receita Federal',
+        lead_name: leadInfo.name || '',
+        phone: leadInfo.phone || '',
+        email: leadInfo.email || '',
+        document: formatCNPJ(cnpjRaw),
+        company_name: cd.razao_social || cd.nome_fantasia || '',
+        location: cd.municipio ? `${cd.municipio}${cd.uf ? ' - ' + cd.uf : ''}` : '',
+        crop: cd.atividade_principal || '',
+        device: detectDevice(userAgent),
+        browser: detectBrowser(userAgent),
+        ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress || '',
+        metadata: {
+          situacao: cd.situacao,
+          capital_social: cd.capital_social,
+          data_abertura: cd.data_abertura,
+          porte: cd.porte
+        }
+      }).catch(() => {});
+    } else if (result && !result.success && result.error_code !== 'INVALID_MATH') {
+      telegramBot.notifySystemLog({
+        level: 'WARN',
+        category: 'CNPJ',
+        message: `Falha na consulta do CNPJ ${cnpjRaw}: ${result.message || 'CNPJ não localizado'}`,
+        path: '/api/cnpj',
+        ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress || ''
+      }).catch(() => {});
+    }
+
     return res.json(result);
   } catch (err) {
     console.error('Error in /api/cnpj:', err);
+    telegramBot.notifySystemLog({
+      level: 'ERROR',
+      category: 'CNPJ',
+      message: `Erro interno ao consultar CNPJ: ${err.message}`,
+      details: err.stack,
+      path: '/api/cnpj',
+      ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress || ''
+    }).catch(() => {});
     return res.status(500).json({ success: false, message: 'Erro interno ao consultar CNPJ' });
   }
 });
@@ -540,6 +635,48 @@ app.get(['/', '/index.html'], (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
+// 13. GLOBAL ERROR HANDLING & SYSTEM LOGGING MIDDLEWARE
+app.use((err, req, res, next) => {
+  console.error('💥 [Server Error Middleware]:', err);
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+  
+  telegramBot.notifySystemLog({
+    level: 'ERROR',
+    category: 'EXPRESS',
+    message: err.message || 'Erro interno no servidor Express',
+    details: err.stack,
+    path: req.originalUrl || req.url,
+    ip: ip
+  }).catch(() => {});
+
+  if (!res.headersSent) {
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+// Process-level uncaught exception & unhandled rejection handlers
+process.on('uncaughtException', (err) => {
+  console.error('🚨 [CRITICAL] Uncaught Exception:', err);
+  telegramBot.notifySystemLog({
+    level: 'CRITICAL',
+    category: 'SYSTEM',
+    message: `Exceção não tratada: ${err.message}`,
+    details: err.stack
+  }).catch(() => {});
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('⚠️ [WARNING] Unhandled Rejection:', reason);
+  const msg = reason instanceof Error ? reason.message : String(reason);
+  const stack = reason instanceof Error ? reason.stack : null;
+  telegramBot.notifySystemLog({
+    level: 'WARN',
+    category: 'PROMISE',
+    message: `Rejeição de promessa não capturada: ${msg}`,
+    details: stack
+  }).catch(() => {});
+});
+
 // Start Telegram Bot
 telegramBot.init();
 
@@ -549,4 +686,12 @@ app.listen(PORT, () => {
   console.log(`🌐 Landing Page: http://localhost:${PORT}`);
   console.log(`👑 Supreme Admin: 100% Criptografado (Acesse via token de 7 dígitos gerado pelo Telegram Bot)`);
   console.log(`🔀 Roteador WhatsApp: http://localhost:${PORT}/r/whatsapp`);
+
+  // Notify Telegram of server operational status
+  telegramBot.notifySystemLog({
+    level: 'INFO',
+    category: 'SERVER',
+    message: `🚀 Servidor Plantae Agrocrédito iniciado e 100% operacional na porta ${PORT}`,
+    details: { port: PORT, env: process.env.NODE_ENV || 'production' }
+  }).catch(() => {});
 });

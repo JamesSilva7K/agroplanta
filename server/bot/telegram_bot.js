@@ -21,7 +21,13 @@ const {
   setCnpjActiveIndex,
   addCnpjToken,
   removeCnpjToken,
-  rotateCnpjToken
+  rotateCnpjToken,
+  insertLog,
+  getRecentLogs,
+  getLogsSummary,
+  recordLeadStep,
+  getRecentLeadSteps,
+  getLeadFunnelStats
 } = require('../db');
 const { getMetrics } = require('../analytics');
 const { generate7DigitToken, revokeAllAdminSessions } = require('../security');
@@ -146,36 +152,106 @@ class TelegramBotService {
     return await this.apiCall('answerCallbackQuery', payload);
   }
 
-  // Notificação instantânea ao administrador quando um lead clica para falar no WhatsApp
+  // Notificação de entrada de visitante no site
+  async notifyVisitorEntry(eventData = {}) {
+    const alertsActive = getConfig('bot_alerts_enabled') === '1';
+    const targetChat = this.adminChatId || getConfig('telegram_admin_id');
+    if (!alertsActive || !targetChat || !this.token) return;
+
+    const devIcon = eventData.device === 'Mobile' ? '📱' : (eventData.device === 'Tablet' ? '📟' : '💻');
+    const origin = eventData.utm_source || (eventData.referrer ? (eventData.referrer.includes('google') ? 'Google' : eventData.referrer.substring(0, 30)) : 'Acesso Direto');
+    const hora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+    const msg = `👁️ <b>NOVO VISITANTE NO SITE</b>\n` +
+      `────────────────────────\n` +
+      `${devIcon} <b>Dispositivo:</b> ${eventData.device || 'Desktop'} (${eventData.browser || '—'})\n` +
+      `📍 <b>Origem:</b> <code>${origin}</code>\n` +
+      `🔗 <b>Página:</b> ${eventData.action_key || 'Entrada Geral'}\n` +
+      `⏰ <b>Horário:</b> ${hora}\n` +
+      `────────────────────────`;
+
+    const markup = {
+      inline_keyboard: [
+        [
+          { text: '📊 Ver Métricas', callback_data: 'menu_metrics_24h' },
+          { text: '📋 Últimos Leads', callback_data: 'menu_recent_leads' }
+        ]
+      ]
+    };
+
+    await this.sendMessage(targetChat, msg, markup);
+  }
+
+  // Notificação quando visitante sai do site sem converter
+  async notifyVisitorExit(eventData = {}) {
+    const alertsActive = getConfig('bot_alerts_enabled') === '1';
+    const targetChat = this.adminChatId || getConfig('telegram_admin_id');
+    if (!alertsActive || !targetChat || !this.token) return;
+
+    const devIcon = eventData.device === 'Mobile' ? '📱' : '💻';
+    const duration = eventData.duration_seconds || 0;
+    const durStr = duration >= 60 ? `${Math.floor(duration / 60)}m ${duration % 60}s` : `${duration}s`;
+
+    const msg = `🚪 <b>SAÍDA SEM CONVERSÃO</b>\n` +
+      `────────────────────────\n` +
+      `${devIcon} <b>Dispositivo:</b> ${eventData.device || 'Desktop'}\n` +
+      `⏱️ <b>Tempo no Site:</b> ${durStr}\n` +
+      `📍 <b>Origem:</b> <code>${eventData.utm_source || 'Direto'}</code>\n` +
+      `⏰ <b>Saiu às:</b> ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}\n` +
+      `────────────────────────`;
+
+    const markup = {
+      inline_keyboard: [
+        [
+          { text: '📊 Métricas de Conversão', callback_data: 'menu_metrics_24h' }
+        ]
+      ]
+    };
+
+    await this.sendMessage(targetChat, msg, markup);
+  }
+
+  // Notificação quando lead clica para ir ao WhatsApp (botão geral do site)
   async notifyLead(leadData) {
     const alertsActive = getConfig('bot_alerts_enabled') === '1';
     const targetChat = this.adminChatId || getConfig('telegram_admin_id');
     if (!alertsActive || !targetChat || !this.token) return;
 
-    const devIcon = leadData.device === 'Mobile' ? '📱' : '💻';
-    const msg = `🚨 <b>NOVO LEAD CAPTURADO NO SITE!</b> 🚨\n` +
-      `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-      `🎯 <b>Ação:</b> ${leadData.button_text || leadData.action_key}\n` +
-      `📱 <b>Destino WhatsApp:</b> <code>+${leadData.whatsapp_number}</code>\n` +
-      `💬 <b>Mensagem Contextual Gerada:</b>\n<i>"${leadData.whatsapp_message}"</i>\n\n` +
-      `📍 <b>Origem / UTM:</b> ${leadData.utm_source || leadData.referrer || 'Acesso Direto'}\n` +
-      `${devIcon} <b>Dispositivo:</b> ${leadData.device} (${leadData.browser || 'Navegador'})\n` +
-      `⏰ <b>Horário:</b> ${new Date().toLocaleString('pt-BR')}\n` +
-      `━━━━━━━━━━━━━━━━━━━━━━━━━`;
+    const devIcon = leadData.device === 'Mobile' ? '📱' : (leadData.device === 'Tablet' ? '📟' : '💻');
+    const hora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+    const origem = leadData.utm_source || leadData.referrer || 'Acesso Direto / Orgânico';
+    const telefoneExibir = leadData.phone ? `\n📞 <b>Celular/WhatsApp:</b> <code>${leadData.phone}</code>` : '';
 
-    const inlineKeyboard = {
-      inline_keyboard: [
-        [
-          { text: '📊 Ver Métricas Atualizadas', callback_data: 'menu_metrics_24h' },
-          { text: '📋 Ver Últimos Leads', callback_data: 'menu_recent_leads' }
-        ],
-        [
-          { text: '⚙️ Painel de Controle', callback_data: 'menu_main' }
-        ]
-      ]
-    };
+    const msg = `🚨 <b>LEAD NO WHATSAPP!</b> 🚨\n` +
+      `════════════════════════\n` +
+      `🎯 <b>Ponto de Contato:</b> ${leadData.button_text || leadData.action_key || 'Botão do Site'}\n` +
+      `📱 <b>WhatsApp Plantae:</b> <code>+${leadData.whatsapp_number || '5518981115624'}</code>${telefoneExibir}\n` +
+      `════════════════════════\n` +
+      `💬 <b>Mensagem Enviada ao WhatsApp:</b>\n` +
+      `<i>"${(leadData.whatsapp_message || '').substring(0, 200)}${leadData.whatsapp_message && leadData.whatsapp_message.length > 200 ? '...' : ''}"</i>\n` +
+      `════════════════════════\n` +
+      `📍 <b>Canal de Origem:</b> <code>${origem}</code>\n` +
+      `${devIcon} <b>Dispositivo:</b> ${leadData.device || 'Desktop'} — ${leadData.browser || 'Navegador'}\n` +
+      `⏰ <b>Horário:</b> ${hora}\n` +
+      `════════════════════════`;
 
-    await this.sendMessage(targetChat, msg, inlineKeyboard);
+    const buttons = [];
+    if (leadData.phone) {
+      const cleanPhone = String(leadData.phone).replace(/\D/g, '');
+      const waTarget = cleanPhone.startsWith('55') ? cleanPhone : '55' + cleanPhone;
+      buttons.push([
+        { text: '💬 Chamar Lead Agora no WhatsApp', url: `https://wa.me/${waTarget}` }
+      ]);
+    }
+    buttons.push([
+      { text: '📊 Ver Métricas Atualizadas', callback_data: 'menu_metrics_24h' },
+      { text: '📋 Últimos Leads', callback_data: 'menu_recent_leads' }
+    ]);
+    buttons.push([
+      { text: '⚙️ Central de Comando', callback_data: 'menu_main' }
+    ]);
+
+    await this.sendMessage(targetChat, msg, { inline_keyboard: buttons });
   }
 
   // Notificação instantânea ao administrador quando um lead completa uma SIMULAÇÃO de Crédito Rural
@@ -184,51 +260,252 @@ class TelegramBotService {
     const targetChat = this.adminChatId || getConfig('telegram_admin_id');
     if (!alertsActive || !targetChat || !this.token) return;
 
-    const devIcon = simData.device === 'Mobile' ? '📱' : '💻';
-    const hasLeadInfo = simData.name || simData.phone || simData.email;
+    const devIcon = simData.device === 'Mobile' ? '📱' : (simData.device === 'Tablet' ? '📟' : '💻');
+    const hora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+    const origem = simData.utm_source || simData.referrer || 'Acesso Direto / Orgânico';
 
-    let leadBlock = '';
-    if (hasLeadInfo) {
-      leadBlock = `👤 <b>Produtor / Lead:</b> <code>${simData.name || 'Não informado'}</code>\n` +
-        `📞 <b>WhatsApp do Produtor:</b> <code>${simData.phone || 'Não informado'}</code>\n` +
-        `📧 <b>E-mail:</b> <code>${simData.email || 'Não informado'}</code>\n` +
-        `🌾 <b>Ocupação:</b> <code>${simData.occupation || 'Produtor Rural'}</code>\n` +
-        `━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    // ── BLOCO DO LEAD/PRODUTOR ──────────────────────────────
+    let blocoLead = '';
+    if (simData.name || simData.phone || simData.email || simData.occupation) {
+      blocoLead =
+        `👤 <b>DADOS DO PRODUTOR / LEAD</b>\n` +
+        `┌────────────────────────────\n`;
+      if (simData.name)       blocoLead += `│ 🏷️ <b>Nome:</b> <code>${simData.name}</code>\n`;
+      if (simData.phone)      blocoLead += `│ 📞 <b>WhatsApp:</b> <code>${formatPhoneDisplay(simData.phone)}</code>\n`;
+      if (simData.email)      blocoLead += `│ 📧 <b>E-mail:</b> <code>${simData.email}</code>\n`;
+      if (simData.occupation) blocoLead += `│ 🌾 <b>Perfil:</b> ${simData.occupation}\n`;
+      blocoLead += `└────────────────────────────\n`;
     }
 
-    const msg = `🌾 <b>NOVA SIMULAÇÃO DE CRÉDITO RURAL!</b> 🌾\n` +
-      `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-      leadBlock +
-      `💰 <b>Valor Solicitado:</b> <code>${simData.credit_value}</code>\n` +
-      `🔢 <b>Plano:</b> <code>${simData.installments}x (${simData.frequency})</code>\n` +
-      `💵 <b>Estimativa por Parcela:</b> <code>${simData.estimated_installment}</code>\n` +
-      (simData.total_amount ? `📊 <b>Total Estimado:</b> <code>${simData.total_amount}</code>\n` : '') +
-      `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-      `📱 <b>Destino WhatsApp:</b> <code>+${simData.whatsapp_number}</code>\n` +
-      `📍 <b>Origem / UTM:</b> ${simData.utm_source || 'Acesso Direto'}\n` +
-      `${devIcon} <b>Dispositivo:</b> ${simData.device} (${simData.browser || 'Navegador'})\n` +
-      `⏰ <b>Horário:</b> ${new Date().toLocaleString('pt-BR')}\n` +
-      `━━━━━━━━━━━━━━━━━━━━━━━━━`;
+    // ── BLOCO DO CNPJ / EMPRESA ────────────────────────────
+    let blocoCnpj = '';
+    const cd = simData.cnpj_data;
+    if (cd && (cd.razao_social || cd.cnpj_formatado)) {
+      blocoCnpj =
+        `🏢 <b>DADOS DA EMPRESA (RECEITA FEDERAL)</b>\n` +
+        `┌────────────────────────────\n` +
+        (cd.cnpj_formatado      ? `│ 🔢 <b>CNPJ:</b> <code>${cd.cnpj_formatado}</code>\n` : '') +
+        (cd.razao_social        ? `│ 🏷️ <b>Razão Social:</b> <b>${cd.razao_social}</b>\n` : '') +
+        (cd.nome_fantasia       ? `│ 🪧 <b>Fantasia:</b> ${cd.nome_fantasia}\n` : '') +
+        (cd.situacao            ? `│ 🚦 <b>Situação:</b> ${cd.situacao === 'ATIVA' ? '🟢 ATIVA' : '🔴 ' + cd.situacao}\n` : '') +
+        (cd.tipo                ? `│ 🏗️ <b>Tipo:</b> ${cd.tipo}\n` : '') +
+        (cd.porte               ? `│ 📊 <b>Porte:</b> ${cd.porte}\n` : '') +
+        (cd.atividade_principal ? `│ ⚙️ <b>Atividade:</b> ${cd.atividade_principal}\n` : '') +
+        (cd.municipio           ? `│ 📍 <b>Localização:</b> ${cd.municipio}${cd.uf ? ' — ' + cd.uf : ''}\n` : '') +
+        (cd.capital_social      ? `│ 💼 <b>Capital Social:</b> <code>${cd.capital_social}</code>\n` : '') +
+        (cd.data_abertura       ? `│ 📅 <b>Fundação:</b> ${cd.data_abertura}\n` : '') +
+        `└────────────────────────────\n`;
+    }
+
+    // ── BLOCO FINANCEIRO DA SIMULAÇÃO ──────────────────────
+    const blocoFinanceiro =
+      `💰 <b>SIMULAÇÃO DE CRÉDITO RURAL</b>\n` +
+      `┌────────────────────────────\n` +
+      `│ 💵 <b>Valor Solicitado:</b> <code>${simData.credit_value}</code>\n` +
+      `│ 🔢 <b>Plano:</b> <code>${simData.installments}x — ${simData.frequency}</code>\n` +
+      `│ 📆 <b>Parcela Estimada:</b> <code>${simData.estimated_installment}</code>\n` +
+      (simData.total_amount ? `│ 📊 <b>Total Estimado:</b> <code>${simData.total_amount}</code>\n` : '') +
+      `└────────────────────────────\n`;
+
+    // ── BLOCO DE RASTREAMENTO ─────────────────────────────
+    const blocoRastreamento =
+      `📡 <b>RASTREAMENTO</b>\n` +
+      `┌────────────────────────────\n` +
+      `│ 📍 <b>Canal:</b> <code>${origem}</code>\n` +
+      `│ ${devIcon} <b>Device:</b> ${simData.device || 'Desktop'} — ${simData.browser || 'Navegador'}\n` +
+      `│ 📱 <b>WhatsApp Plantae:</b> <code>+${simData.whatsapp_number || '5518981115624'}</code>\n` +
+      `│ ⏰ <b>Horário:</b> ${hora}\n` +
+      `└────────────────────────────`;
+
+    const msg =
+      `🌾 <b>⚡ SIMULAÇÃO DE CRÉDITO RURAL — LEAD QUENTE!</b> 🌾\n` +
+      `════════════════════════\n` +
+      blocoLead +
+      blocoCnpj +
+      blocoFinanceiro +
+      blocoRastreamento;
 
     const buttons = [];
+    // Botão de chamar no WhatsApp do LEAD (prioridade máxima)
     if (simData.phone) {
-      const cleanLeadPhone = simData.phone.replace(/\D/g, '');
+      const cleanLeadPhone = String(simData.phone).replace(/\D/g, '');
       const waLeadTarget = cleanLeadPhone.startsWith('55') ? cleanLeadPhone : '55' + cleanLeadPhone;
       buttons.push([
-        { text: '💬 Chamar Lead no WhatsApp', url: `https://wa.me/${waLeadTarget}` }
+        { text: `🔥 Chamar ${simData.name || 'Lead'} Agora no WhatsApp!`, url: `https://wa.me/${waLeadTarget}` }
       ]);
     }
     buttons.push([
-      { text: '📊 Ver Métricas', callback_data: 'menu_metrics_24h' },
-      { text: '📋 Ver Últimos Leads', callback_data: 'menu_recent_leads' }
+      { text: '📊 Métricas em Tempo Real', callback_data: 'menu_metrics_24h' },
+      { text: '📋 Últimos Leads', callback_data: 'menu_recent_leads' }
     ]);
     buttons.push([
-      { text: '📱 WhatsApp Configurado', callback_data: 'menu_whatsapp' },
-      { text: '⚙️ Painel de Controle', callback_data: 'menu_main' }
+      { text: '⚙️ Central de Comando', callback_data: 'menu_main' }
     ]);
 
-    const inlineKeyboard = { inline_keyboard: buttons };
-    await this.sendMessage(targetChat, msg, inlineKeyboard);
+    await this.sendMessage(targetChat, msg, { inline_keyboard: buttons });
+  }
+
+  // Notificação instantânea para cada avanço de etapa do lead no funil
+  async notifyLeadStep(stepData = {}) {
+    const alertsActive = getConfig('bot_alerts_enabled') === '1';
+    const targetChat = this.adminChatId || getConfig('telegram_admin_id');
+    if (!alertsActive || !targetChat || !this.token) return;
+
+    try {
+      recordLeadStep(stepData);
+    } catch (e) {}
+
+    const stepNum = parseInt(stepData.step_number || stepData.step || 1, 10);
+    const devIcon = stepData.device === 'Mobile' ? '📱' : (stepData.device === 'Tablet' ? '📟' : '💻');
+    const hora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+    let progressBar = '';
+    let headerTitle = '';
+    let stepBadge = '';
+
+    if (stepNum === 1) {
+      progressBar = '🟩⬜⬜⬜ (25%)';
+      headerTitle = '🌾 <b>LEAD INICIOU SIMULAÇÃO!</b> (Etapa 1/4)';
+      stepBadge = '1️⃣ <b>Etapa 1:</b> Valor e Prazo Definidos';
+    } else if (stepNum === 2) {
+      progressBar = '🟩🟩⬜⬜ (50%)';
+      headerTitle = '👤 <b>LEAD IDENTIFICADO / CNPJ!</b> (Etapa 2/4)';
+      stepBadge = '2️⃣ <b>Etapa 2:</b> Dados do Produtor / Empresa';
+    } else if (stepNum === 3) {
+      progressBar = '🟩🟩🟩⬜ (75%)';
+      headerTitle = '📊 <b>LEAD VISUALIZOU A PROPOSTA!</b> (Etapa 3/4)';
+      stepBadge = '3️⃣ <b>Etapa 3:</b> Proposta Calculada com Sucesso';
+    } else {
+      progressBar = '🟩🟩🟩🟩 (100%)';
+      headerTitle = '🔥 <b>LEAD CONVERTEU NO WHATSAPP!</b> (Etapa 4/4)';
+      stepBadge = '4️⃣ <b>Etapa 4:</b> Clique de Envio da Proposta ao WhatsApp';
+    }
+
+    let leadBlock = '';
+    const hasNameOrContact = stepData.name || stepData.lead_name || stepData.phone || stepData.email;
+    if (hasNameOrContact) {
+      leadBlock += `👤 <b>Produtor / Responsável:</b> <code>${stepData.lead_name || stepData.name || 'Não informado'}</code>\n`;
+      if (stepData.phone) leadBlock += `📞 <b>WhatsApp do Produtor:</b> <code>${formatPhoneDisplay(stepData.phone)}</code>\n`;
+      if (stepData.email) leadBlock += `📧 <b>E-mail:</b> <code>${stepData.email}</code>\n`;
+    }
+
+    let companyBlock = '';
+    if (stepData.document || stepData.company_name) {
+      companyBlock += `🏢 <b>Empresa / Razão Social:</b> <b>${stepData.company_name || 'Produtor Rural'}</b>\n`;
+      if (stepData.document) companyBlock += `🔢 <b>CNPJ / CPF:</b> <code>${stepData.document}</code>\n`;
+    }
+
+    let creditBlock = '';
+    if (stepData.credit_value) {
+      creditBlock += `💰 <b>Valor Pretendido:</b> <code>${stepData.credit_value}</code>\n`;
+      if (stepData.installments) creditBlock += `🔢 <b>Condições:</b> <code>${stepData.installments}x (${stepData.frequency || 'Mensal'})</code>\n`;
+      if (stepData.estimated_installment) creditBlock += `💵 <b>Parcela Estimada:</b> <code>${stepData.estimated_installment}</code>\n`;
+      if (stepData.total_amount) creditBlock += `📊 <b>Total Estimado:</b> <code>${stepData.total_amount}</code>\n`;
+    }
+
+    let extraBlock = '';
+    if (stepData.location || stepData.crop) {
+      if (stepData.location) extraBlock += `📍 <b>Localização:</b> ${stepData.location}\n`;
+      if (stepData.crop) extraBlock += `🌱 <b>Cultura / Produção:</b> ${stepData.crop}\n`;
+    }
+
+    const msg =
+      `${headerTitle}\n` +
+      `════════════════════════\n` +
+      `🚀 <b>Progresso do Funil:</b> <code>${progressBar}</code>\n` +
+      `${stepBadge}\n` +
+      `════════════════════════\n` +
+      (leadBlock ? leadBlock + `────────────────────────\n` : '') +
+      (companyBlock ? companyBlock + `────────────────────────\n` : '') +
+      (creditBlock ? creditBlock + `────────────────────────\n` : '') +
+      (extraBlock ? extraBlock + `────────────────────────\n` : '') +
+      `📍 <b>Canal de Entrada:</b> <code>${stepData.utm_source || 'Direto / Orgânico'}</code>\n` +
+      `${devIcon} <b>Dispositivo:</b> ${stepData.device || 'Desktop'} (${stepData.browser || 'Navegador'})\n` +
+      `⏰ <b>Horário:</b> ${hora}\n` +
+      `════════════════════════`;
+
+    const buttons = [];
+    if (stepData.phone) {
+      const cleanPhone = String(stepData.phone).replace(/\D/g, '');
+      const waTarget = cleanPhone.startsWith('55') ? cleanPhone : '55' + cleanPhone;
+      buttons.push([
+        { text: `🔥 Chamar ${stepData.name || 'Lead'} Agora no WhatsApp!`, url: `https://wa.me/${waTarget}` }
+      ]);
+    }
+    buttons.push([
+      { text: '🌾 Ver Funil de Leads', callback_data: 'menu_lead_funnel' },
+      { text: '📊 Métricas em Tempo Real', callback_data: 'menu_metrics_24h' }
+    ]);
+    buttons.push([
+      { text: '⚙️ Central de Comando', callback_data: 'menu_main' }
+    ]);
+
+    await this.sendMessage(targetChat, msg, { inline_keyboard: buttons });
+  }
+
+  // Notificação inteligente de logs e erros do sistema
+  async notifySystemLog(logData = {}) {
+    try {
+      insertLog(logData.level, logData.category, logData.message, logData.details, logData.session_id);
+    } catch (e) {}
+
+    const alertsActive = getConfig('bot_alerts_enabled') === '1';
+    const targetChat = this.adminChatId || getConfig('telegram_admin_id');
+    if (!alertsActive || !targetChat || !this.token) return;
+
+    const level = String(logData.level || 'INFO').toUpperCase();
+
+    // Anti-flood throttle: suprime erros idênticos repetidos em menos de 60 segundos
+    const msgKey = `${level}:${logData.category}:${logData.message}`;
+    const now = Date.now();
+    if (!this._logThrottle) this._logThrottle = {};
+    if (this._logThrottle[msgKey] && (now - this._logThrottle[msgKey].time < 60000)) {
+      this._logThrottle[msgKey].count++;
+      return;
+    }
+    this._logThrottle[msgKey] = { time: now, count: 1 };
+
+    let icon = 'ℹ️';
+    let title = 'LOG OPERACIONAL DO SISTEMA';
+    if (level === 'ERROR' || level === 'CRITICAL') {
+      icon = '🚨';
+      title = 'ERRO CRÍTICO NO SISTEMA';
+    } else if (level === 'WARN' || level === 'WARNING') {
+      icon = '⚠️';
+      title = 'AVISO DO SISTEMA';
+    }
+
+    const hora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+    let detailsText = '';
+    if (logData.details) {
+      const raw = typeof logData.details === 'object' ? JSON.stringify(logData.details, null, 2) : String(logData.details);
+      const safe = raw.replace(/</g, '&lt;').replace(/>/g, '&gt;').substring(0, 500);
+      detailsText = `\n📄 <b>Detalhes Técnicos:</b>\n<pre>${safe}</pre>`;
+    }
+
+    const msg =
+      `${icon} <b>${title}</b> ${icon}\n` +
+      `════════════════════════\n` +
+      `🏷️ <b>Nível:</b> <code>[${level}]</code> | <b>Categoria:</b> <code>${logData.category || 'GERAL'}</code>\n` +
+      `📝 <b>Mensagem:</b> <b>${(logData.message || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</b>\n` +
+      (logData.path ? `🔗 <b>Endpoint / Rota:</b> <code>${logData.path}</code>\n` : '') +
+      (logData.ip ? `🌐 <b>IP de Origem:</b> <code>${logData.ip}</code>\n` : '') +
+      detailsText +
+      `\n⏰ <b>Horário:</b> ${hora}\n` +
+      `════════════════════════`;
+
+    const buttons = [
+      [
+        { text: '📋 Ver Histórico de Logs', callback_data: 'menu_system_logs' },
+        { text: '⚙️ Diagnóstico', callback_data: 'menu_diagnostics' }
+      ],
+      [
+        { text: '🌿 Menu Principal', callback_data: 'menu_main' }
+      ]
+    ];
+
+    await this.sendMessage(targetChat, msg, { inline_keyboard: buttons });
   }
 
   // Teclado Fixo Inferior de Botões (Nunca requer digitação de comandos)
@@ -237,7 +514,8 @@ class TelegramBotService {
       keyboard: [
         [
           { text: '🏢 Tokens CNPJ' },
-          { text: '🔐 Gerar Link Criptografado' }
+          { text: '🌾 Funil de Leads' },
+          { text: '📋 Logs do Sistema' }
         ],
         [
           { text: '📊 Métricas em Tempo Real' },
@@ -259,6 +537,10 @@ class TelegramBotService {
   getMainMenuKeyboard() {
     return {
       inline_keyboard: [
+        [
+          { text: '🌾 Funil de Leads Avançado', callback_data: 'menu_lead_funnel' },
+          { text: '📋 Logs do Sistema', callback_data: 'menu_system_logs' }
+        ],
         [
           { text: '🏢 Gestão de Tokens de CNPJ (Receita)', callback_data: 'menu_cnpj_tokens' },
           { text: '🔐 Link do Admin', callback_data: 'action_get_admin_link' }
@@ -626,6 +908,124 @@ class TelegramBotService {
       inline_keyboard: [
         [{ text: '🔄 Atualizar Diagnóstico', callback_data: 'menu_diagnostics' }],
         [{ text: '⬅️ Voltar ao Menu Principal', callback_data: 'menu_main' }]
+      ]
+    };
+
+    if (messageId) {
+      await this.editMessage(chatId, messageId, text, markup);
+    } else {
+      await this.sendMessage(chatId, text, markup);
+    }
+  }
+
+  // Painel de Logs do Sistema em Tempo Real
+  async showSystemLogs(chatId, messageId = null, filterLevel = null) {
+    const logs = getRecentLogs(10, filterLevel);
+    const summary = getLogsSummary(24);
+
+    let text = `📋 <b>PAINEL DE LOGS DO SISTEMA (24H)</b>\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `🔴 <b>Erros:</b> ${summary.errors} | 🟡 <b>Avisos:</b> ${summary.warnings} | ℹ️ <b>Infos:</b> ${summary.info}\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+    if (logs.length === 0) {
+      text += `<i>Nenhum registro de log encontrado para os critérios selecionados. Sistema operando 100% estável! ✅</i>\n`;
+    } else {
+      logs.forEach((l, i) => {
+        const icon = (l.level === 'ERROR' || l.level === 'CRITICAL') ? '🔴' : (l.level === 'WARN' || l.level === 'WARNING' ? '🟡' : 'ℹ️');
+        const hora = new Date(l.created_at).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+        text += `${i + 1}. ${icon} <b>[${l.category}]</b> <code>${hora}</code>\n`;
+        text += `   <i>${(l.message || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').substring(0, 95)}</i>\n`;
+        if (l.details) {
+          try {
+            const parsed = typeof l.details === 'string' ? JSON.parse(l.details) : l.details;
+            if (parsed && parsed.path) text += `   🔗 <code>${parsed.path}</code>\n`;
+          } catch(e) {}
+        }
+        text += '\n';
+      });
+    }
+
+    text += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+    const markup = {
+      inline_keyboard: [
+        [
+          { text: filterLevel === 'ERROR' ? '📋 Ver Todos os Logs' : '🔴 Apenas Erros Críticos', callback_data: filterLevel === 'ERROR' ? 'menu_system_logs' : 'menu_system_logs_errors' },
+          { text: '🔄 Atualizar Logs', callback_data: filterLevel === 'ERROR' ? 'menu_system_logs_errors' : 'menu_system_logs' }
+        ],
+        [
+          { text: '🌾 Funil de Leads', callback_data: 'menu_lead_funnel' },
+          { text: '⬅️ Voltar ao Menu', callback_data: 'menu_main' }
+        ]
+      ]
+    };
+
+    if (messageId) {
+      await this.editMessage(chatId, messageId, text, markup);
+    } else {
+      await this.sendMessage(chatId, text, markup);
+    }
+  }
+
+  // Painel Avançado do Funil de Leads
+  async showLeadFunnel(chatId, messageId = null) {
+    const stats = getLeadFunnelStats(24);
+    const recentSteps = getRecentLeadSteps(8);
+
+    let s1 = 0, s2 = 0, s3 = 0, s4 = 0;
+    stats.forEach(s => {
+      if (s.step_number === 1) s1 = s.unique_sessions;
+      if (s.step_number === 2) s2 = s.unique_sessions;
+      if (s.step_number === 3) s3 = s.unique_sessions;
+      if (s.step_number === 4) s4 = s.unique_sessions;
+    });
+
+    const p2 = s1 > 0 ? Math.round((s2 / s1) * 100) : 0;
+    const p3 = s1 > 0 ? Math.round((s3 / s1) * 100) : 0;
+    const p4 = s1 > 0 ? Math.round((s4 / s1) * 100) : 0;
+
+    let text = `🌾 <b>FUNIL AVANÇADO DE LEADS (24 HORAS)</b>\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `Acompanhe a progressão exata dos produtores em cada etapa da simulação:\n\n` +
+      `1️⃣ <b>Etapa 1 (Valor e Prazo):</b>\n` +
+      `   • <b>${s1}</b> produtores iniciaram simulação [100%]\n\n` +
+      `2️⃣ <b>Etapa 2 (Dados & Consulta CNPJ):</b>\n` +
+      `   • <b>${s2}</b> informaram dados / CNPJ [${p2}%]\n\n` +
+      `3️⃣ <b>Etapa 3 (Proposta Pronta Visualizada):</b>\n` +
+      `   • <b>${s3}</b> propostas calculadas na tela [${p3}%]\n\n` +
+      `4️⃣ <b>Etapa 4 (Conversão Final WhatsApp):</b>\n` +
+      `   • <b>${s4}</b> chamaram o consultor no WhatsApp [${p4}%] 🔥\n\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `⏱️ <b>ÚLTIMOS LEADS EM ANDAMENTO NO FUNIL:</b>\n`;
+
+    if (recentSteps.length === 0) {
+      text += `<i>Nenhum avanço de lead registrado nas últimas horas.</i>\n`;
+    } else {
+      recentSteps.forEach((ls, i) => {
+        const hora = new Date(ls.created_at).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+        const stepIcons = ['1️⃣', '2️⃣', '3️⃣', '4️⃣'];
+        const icon = stepIcons[ls.step_number - 1] || '🌾';
+        const nome = ls.lead_name || ls.company_name || 'Produtor Anônimo';
+        const val = ls.credit_value ? ` • <code>${ls.credit_value}</code>` : '';
+        text += `${icon} <b>${nome}</b> (${ls.step_name})${val}\n`;
+        if (ls.phone) text += `   📞 <code>${formatPhoneDisplay(ls.phone)}</code> | ⏰ ${hora}\n`;
+        else text += `   ⏰ ${hora}\n`;
+      });
+    }
+
+    text += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+    const markup = {
+      inline_keyboard: [
+        [
+          { text: '🔄 Atualizar Funil', callback_data: 'menu_lead_funnel' },
+          { text: '📋 Últimos Leads', callback_data: 'menu_recent_leads' }
+        ],
+        [
+          { text: '📊 Métricas em Tempo Real', callback_data: 'menu_metrics_24h' },
+          { text: '⬅️ Voltar ao Menu', callback_data: 'menu_main' }
+        ]
       ]
     };
 
@@ -1105,7 +1505,19 @@ class TelegramBotService {
       return;
     }
 
-    // 12. Testar Lead
+    // 12. Logs do Sistema
+    if (text.includes('log') || text.includes('logs') || text.includes('erro') || text.includes('falha')) {
+      await this.showSystemLogs(chatId, null);
+      return;
+    }
+
+    // 13. Funil de Leads
+    if (text.includes('funil') || text.includes('etapa')) {
+      await this.showLeadFunnel(chatId, null);
+      return;
+    }
+
+    // 14. Testar Lead
     if (text.includes('testar') || text.includes('teste')) {
       const waNumber = getConfig('whatsapp_number') || process.env.DEFAULT_WHATSAPP_NUMBER || '5518981115624';
       await this.notifyLead({
@@ -1135,6 +1547,21 @@ class TelegramBotService {
     if (data === 'menu_main' || data === 'menu_main_refresh') {
       delete this.userStates[chatId];
       await this.showMainMenu(chatId, messageId);
+      return;
+    }
+
+    if (data === 'menu_system_logs') {
+      await this.showSystemLogs(chatId, messageId);
+      return;
+    }
+
+    if (data === 'menu_system_logs_errors') {
+      await this.showSystemLogs(chatId, messageId, 'ERROR');
+      return;
+    }
+
+    if (data === 'menu_lead_funnel') {
+      await this.showLeadFunnel(chatId, messageId);
       return;
     }
 

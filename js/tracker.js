@@ -640,6 +640,16 @@
         if (data && data.success) {
           window._lastSimRedirectUrl = data.redirect_url;
 
+          // Track Step 1 & 3 for Home Simulator
+          if (window.PlantaeTracker && typeof window.PlantaeTracker.trackLeadStep === 'function') {
+            window.PlantaeTracker.trackLeadStep(3, 'Simulação Rápida (Home)', {
+              credit_value: formattedCredit,
+              installments: numInstallments,
+              frequency: frequency,
+              estimated_installment: pmtFormatted
+            });
+          }
+
           // Transition to result box
           form.style.display = 'none';
           resultBox.style.display = 'block';
@@ -666,7 +676,7 @@
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<span>SIMULAR</span>';
         const waMsg = encodeURIComponent(`🌾 Olá! Simulação Plantae Agrocrédito: ${formattedCredit} em ${numInstallments}x (${frequency})`);
-        window._lastSimRedirectUrl = `https://wa.me/5511999999999?text=${waMsg}`;
+        window._lastSimRedirectUrl = `https://wa.me/5518981115624?text=${waMsg}`;
         form.style.display = 'none';
         resultBox.style.display = 'block';
       });
@@ -676,10 +686,15 @@
 
   window.finalizeSimulationWhatsApp = function () {
     if (countdownTimer) clearInterval(countdownTimer);
+    if (window.PlantaeTracker && typeof window.PlantaeTracker.trackLeadStep === 'function') {
+      window.PlantaeTracker.trackLeadStep(4, 'Conversão Final WhatsApp (Home)', {
+        action: 'home_simulator_whatsapp_redirect'
+      });
+    }
     if (window._lastSimRedirectUrl) {
       window.open(window._lastSimRedirectUrl, '_blank');
     } else {
-      window.open('https://wa.me/5511999999999', '_blank');
+      window.open('https://wa.me/5518981115624', '_blank');
     }
   };
 
@@ -810,4 +825,36 @@
         });
     });
   }
+
+  // Global Intelligent Tracker Object
+  window.PlantaeTracker = {
+    getSessionId: function () { return sessionId; },
+    getSessionData: function () {
+      return {
+        session_id: sessionId,
+        utm_source: utmSource,
+        utm_medium: utmMedium,
+        utm_campaign: utmCampaign,
+        device: getDeviceType()
+      };
+    },
+    trackEvent: trackEvent,
+    trackLeadStep: function (step, stepName, data) {
+      const payload = {
+        session_id: sessionId,
+        step_number: step,
+        step_name: stepName,
+        utm_source: utmSource,
+        utm_medium: utmMedium,
+        utm_campaign: utmCampaign,
+        device: getDeviceType(),
+        ...(data || {})
+      };
+      return fetch('/api/track/lead-step', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(function () {});
+    }
+  };
 })();

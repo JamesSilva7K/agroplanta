@@ -1036,8 +1036,8 @@ body {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
 }
 
 .shield-card {
@@ -1203,5 +1203,13 @@ body {
 
 .sec-divider {
   color: rgba(255, 255, 255, 0.2);
+}
+
+#security-active-bar {
+  display: none;
+}
+
+#shield-lock-overlay {
+  display: none;
 }
 

@@ -83,7 +83,23 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'GET') {
     const config = getConfigFile();
-    return res.status(200).json(config);
+    // Public GET: only expose safe, non-sensitive fields
+    // Never expose telegram tokens or admin IDs to the frontend
+    const publicConfig = {
+      whatsapp_number: config.whatsapp_number || process.env.DEFAULT_WHATSAPP_NUMBER || '5518981115624',
+      redirects_active: config.redirects_active !== false,
+      bot_alerts_enabled: config.bot_alerts_enabled !== false,
+      primary_color: config.primary_color || '#00A870',
+      secondary_color: config.secondary_color || '#013644',
+      accent_color: config.accent_color || '#006B59',
+      banner_slide_1: config.banner_slide_1 || 'images/hero-1.png',
+      banner_slide_2: config.banner_slide_2 || 'images/hero-2.png',
+      banner_slide_3: config.banner_slide_3 || 'images/hero-3.png',
+      banner_slide_4: config.banner_slide_4 || 'images/banner-davi.jpg',
+      banner_mobile: config.banner_mobile || 'images/plantae-hero-1-mb.png',
+      updated_at: config.updated_at || null
+    };
+    return res.status(200).json(publicConfig);
   }
 
   if (req.method === 'POST') {

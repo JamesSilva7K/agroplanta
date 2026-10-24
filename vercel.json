@@ -2,6 +2,10 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/css/8b87ddb693cffeb08e0834cdcfddb169.css",
+      "destination": "/credito/css/8b87ddb693cffeb08e0834cdcfddb169.css"
+    },
+    {
       "source": "/credito",
       "destination": "/credito/index.html"
     },

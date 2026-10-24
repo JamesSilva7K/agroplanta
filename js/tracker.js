@@ -300,14 +300,20 @@
         if (lowerHref.startsWith('#') || lowerHref.startsWith('tel:') || lowerHref.startsWith('mailto:')) return;
         if (lowerHref.includes('instagram.com') || lowerHref.includes('facebook.com') || lowerHref.includes('linkedin.com')) return;
 
+        // If pointing to home or root, keep as "/"
+        if (lowerHref === '/' || lowerHref === '' || lowerText === 'início' || lowerText === 'inicio' || lowerText === 'home' || a.closest('.logo-padrao')) {
+          a.setAttribute('href', '/');
+          return;
+        }
+
         // If pointing to old landing pages or WordPress domain
         if (lowerHref.includes('plantaeagrocredito.com.br') || lowerHref.includes('lp-whatsapp')) {
           if (lowerHref.replace(/\/+$/, '') === 'https://plantaeagrocredito.com.br' || lowerHref === 'https://plantaeagrocredito.com.br/') {
-            a.setAttribute('href', '#');
+            a.setAttribute('href', '/');
             return;
           }
-          if (lowerHref.includes('simule') || lowerHref.includes('solicite')) {
-            a.setAttribute('href', '#credit-simulator');
+          if (lowerHref.includes('simule') || lowerHref.includes('solicite') || lowerHref.includes('credito-rural')) {
+            a.setAttribute('href', '#plantae-simulator-card');
             return;
           }
           const actionKey = getActionKeyForElement(a, href, text);
@@ -381,13 +387,23 @@
         lowerHref.includes('#credit-simulator') ||
         /simular|simulaç/i.test(text);
 
-      if (isSimulationCta && !target.closest('#credit-simulator-form') && !target.closest('#sim-result-box')) {
+      if (isSimulationCta && !target.closest('#credit-simulator-form') && !target.closest('#sim-result-box') && !target.closest('#plantae-simulator-card')) {
+        const simCard = document.getElementById('plantae-simulator-card');
+        if (simCard) {
+          e.preventDefault();
+          trackEvent('input_simulation_click', {
+            action_key: 'cta_scroll_simulador',
+            button_text: text || 'Simular Crédito'
+          });
+          simCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
         e.preventDefault();
         trackEvent('input_simulation_click', {
-          action_key: 'cta_ir_para_consulta',
+          action_key: 'cta_ir_para_credito',
           button_text: text || 'Simular Crédito'
         });
-        window.location.href = '/consulta';
+        window.location.href = '/credito';
         return;
       }
 
@@ -401,6 +417,7 @@
 
       // Avoid intercepting internal authorized portals or privacy policy anchor
       if (lowerHref.includes('softsaaspif') || lowerHref.includes('ib.plantaeagrocredito')) return;
+      if (href === '/' || lowerHref === '/' || lowerText === 'início' || lowerText === 'inicio' || lowerText === 'home' || target.closest('.logo-padrao')) return;
       if (lowerHref === '#' && !isConversionCta) return;
       if (lowerHref.startsWith('#content') || lowerHref.startsWith('#elementor-action')) return;
       if (lowerHref.includes('politica-de-privacidade') && !target.classList.contains('elementor-button')) return;

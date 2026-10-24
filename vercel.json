@@ -3,11 +3,55 @@
   "rewrites": [
     {
       "source": "/r/whatsapp",
-      "destination": "/api/r/whatsapp"
+      "destination": "/api/whatsapp"
     },
     {
       "source": "/r/whatsapp/(.*)",
-      "destination": "/api/r/whatsapp?$1"
+      "destination": "/api/whatsapp?$1"
+    },
+    {
+      "source": "/api/r/whatsapp",
+      "destination": "/api/whatsapp"
+    },
+    {
+      "source": "/api/r/whatsapp/(.*)",
+      "destination": "/api/whatsapp?$1"
+    },
+    {
+      "source": "/api/admin/config",
+      "destination": "/api/admin?route=config"
+    },
+    {
+      "source": "/api/admin/upload",
+      "destination": "/api/admin?route=upload"
+    },
+    {
+      "source": "/api/admin/metrics/clear",
+      "destination": "/api/admin?route=metrics-clear"
+    },
+    {
+      "source": "/api/analytics/metrics",
+      "destination": "/api/analytics"
+    },
+    {
+      "source": "/api/track/event",
+      "destination": "/api/track?type=event"
+    },
+    {
+      "source": "/api/track/lead-step",
+      "destination": "/api/track?type=lead-step"
+    },
+    {
+      "source": "/api/messages/:key/reset",
+      "destination": "/api/messages?key=:key&reset=true"
+    },
+    {
+      "source": "/api/messages/:key",
+      "destination": "/api/messages?key=:key"
+    },
+    {
+      "source": "/api/simulations",
+      "destination": "/api/simulate?simulations=true"
     },
     {
       "source": "/css/8b87ddb693cffeb08e0834cdcfddb169.css",
@@ -96,7 +140,7 @@
     }
   ],
   "functions": {
-    "api/**/*.js": {
+    "api/*.js": {
       "maxDuration": 30
     }
   }

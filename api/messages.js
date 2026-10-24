@@ -65,19 +65,30 @@ module.exports = function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+  const query = req.query || {};
+
   if (req.method === 'GET') {
     const messages = loadMessages();
+    const actionKey = query.key || query.action_key;
+    if (actionKey) {
+      const msg = messages.find(m => m.action_key === actionKey);
+      if (!msg) return res.status(404).json({ error: 'Message not found' });
+      return res.status(200).json({ success: true, message: msg });
+    }
     return res.status(200).json({ success: true, messages });
   }
 
-  // POST: update a specific message (body: { action_key, message })
+  // POST: update a specific message (body: { action_key, message } or query: ?key=...&reset=true)
   if (req.method === 'POST') {
     let body = req.body || {};
     if (typeof body === 'string') {
       try { body = JSON.parse(body); } catch (e) {}
     }
 
-    const { action_key, message, reset } = body;
+    const action_key = query.key || query.action_key || body.action_key;
+    const message = body.message;
+    const reset = query.reset === 'true' || query.reset === true || body.reset;
+
     if (!action_key) {
       return res.status(400).json({ error: 'action_key is required' });
     }
@@ -86,7 +97,6 @@ module.exports = function handler(req, res) {
     const idx = messages.findIndex(m => m.action_key === action_key);
 
     if (idx === -1) {
-      // Add new
       const def = DEFAULT_MESSAGES.find(m => m.action_key === action_key);
       messages.push({
         action_key,

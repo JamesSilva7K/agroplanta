@@ -1,6 +1,8 @@
 /**
- * Plantae Agrocrédito - Vercel Serverless Function for Lead Step Funnel Tracking
- * Handles POST /api/track/lead-step
+ * Plantae Agrocrédito - Unified Vercel Serverless Function for Analytics & Lead Funnel Tracking
+ * Handles:
+ *   POST /api/track/event      → general visitor and CTA click event tracking
+ *   POST /api/track/lead-step  → step-by-step lead funnel progression with Telegram alerts
  */
 
 const fs = require('fs');
@@ -120,7 +122,7 @@ function notifyLeadStepTelegram(data) {
 module.exports = function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-admin-token, x-admin-gate, x-admin-pwd');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -135,11 +137,23 @@ module.exports = function handler(req, res) {
     if (typeof data === 'string') {
       try { data = JSON.parse(data); } catch (e) {}
     }
-    notifyLeadStepTelegram(data);
 
+    const query = req.query || {};
+    const isLeadStep = query.type === 'lead-step' || Boolean(data.step);
+
+    if (isLeadStep) {
+      notifyLeadStepTelegram(data);
+      return res.status(200).json({
+        success: true,
+        message: 'Lead step tracked successfully'
+      });
+    }
+
+    // General tracking event
     return res.status(200).json({
       success: true,
-      message: 'Lead step tracked successfully'
+      event: data.type || data.event || 'unknown',
+      recorded: true
     });
   } catch (err) {
     return res.status(500).json({

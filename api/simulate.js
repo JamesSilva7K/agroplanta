@@ -1,6 +1,9 @@
 /**
- * Plantae Agrocrédito - Vercel Serverless Function for Credit Simulation
- * Handles POST /api/simulate
+ * Plantae Agrocrédito - Unified Vercel Serverless Function for Credit Simulation
+ * Handles:
+ *   POST /api/simulate       → calculates proposal, sends telegram alert, logs simulation
+ *   GET  /api/simulations    → returns simulation history for admin
+ *   POST /api/simulations   → registers/appends a simulation entry
  */
 
 const fs = require('fs');
@@ -31,6 +34,37 @@ function getActivePhone() {
   } catch (e) {}
 
   return DEFAULT_PHONE;
+}
+
+function getSimulationsFilePath() {
+  return path.join(process.cwd(), 'data', 'simulations.json');
+}
+
+function loadSimulations(limit = 50) {
+  try {
+    const filePath = getSimulationsFilePath();
+    if (fs.existsSync(filePath)) {
+      const raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      if (Array.isArray(raw)) {
+        return raw.slice(-limit).reverse();
+      }
+    }
+  } catch (e) {}
+  return [];
+}
+
+function saveSimulation(sim) {
+  try {
+    const existing = loadSimulations(200).reverse();
+    existing.push({ ...sim, id: Date.now(), created_at: new Date().toISOString() });
+    const trimmed = existing.slice(-200);
+    const dataDir = path.join(process.cwd(), 'data');
+    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+    fs.writeFileSync(getSimulationsFilePath(), JSON.stringify(trimmed, null, 2), 'utf8');
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 
 function sendTelegramAlert(simData) {
@@ -82,49 +116,72 @@ function sendTelegramAlert(simData) {
 }
 
 module.exports = function handler(req, res) {
-  // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-admin-token, x-admin-gate, x-admin-pwd');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+  const query = req.query || {};
+
+  // GET: simulations list
+  if (req.method === 'GET') {
+    const limit = parseInt(query.limit || '50', 10);
+    const simulations = loadSimulations(limit);
+    return res.status(200).json({
+      success: true,
+      simulations,
+      total: simulations.length
+    });
   }
 
-  const body = req.body || {};
-  const phone = getActivePhone();
+  if (req.method === 'POST') {
+    let body = req.body || {};
+    if (typeof body === 'string') {
+      try { body = JSON.parse(body); } catch (e) {}
+    }
 
-  const name = body.name || 'Produtor Rural';
-  const company = body.company_name || 'Empresa Agro';
-  const document = body.document || '';
-  const creditValue = body.credit_value || 0;
-  const installments = body.installments || 0;
-  const frequency = body.frequency || 'Semestral';
-  const installmentVal = body.estimated_installment || 0;
+    // Direct simulation logging route (?simulations=true)
+    if (query.simulations === 'true' || query.list === 'true') {
+      saveSimulation(body);
+      return res.status(200).json({ success: true });
+    }
 
-  const waText = 
-    `🌾 Olá! Sou *${name}* da empresa *${company}*${document ? ` (${document})` : ''}.\n` +
-    `Realizei uma simulação de Crédito Rural no site da Plantae:\n\n` +
-    `💰 *Valor Solicitado:* R$ ${creditValue}\n` +
-    `🔢 *Prazo:* ${installments}x (${frequency})\n` +
-    `💵 *Parcela Estimada:* R$ ${installmentVal}\n` +
-    (body.location ? `📍 *Localização:* ${body.location}\n` : '') +
-    (body.crop ? `🌱 *Cultura:* ${body.crop}\n\n` : '\n') +
-    `Gostaria de dar continuidade à análise da proposta e falar com um consultor!`;
+    // Standard credit simulation calculation
+    const phone = getActivePhone();
+    const name = body.name || 'Produtor Rural';
+    const company = body.company_name || 'Empresa Agro';
+    const document = body.document || '';
+    const creditValue = body.credit_value || 0;
+    const installments = body.installments || 0;
+    const frequency = body.frequency || 'Semestral';
+    const installmentVal = body.estimated_installment || 0;
 
-  const redirectUrl = `https://wa.me/${phone}?text=${encodeURIComponent(waText)}`;
+    const waText = 
+      `🌾 Olá! Sou *${name}* da empresa *${company}*${document ? ` (${document})` : ''}.\n` +
+      `Realizei uma simulação de Crédito Rural no site da Plantae:\n\n` +
+      `💰 *Valor Solicitado:* R$ ${creditValue}\n` +
+      `🔢 *Prazo:* ${installments}x (${frequency})\n` +
+      `💵 *Parcela Estimada:* R$ ${installmentVal}\n` +
+      (body.location ? `📍 *Localização:* ${body.location}\n` : '') +
+      (body.crop ? `🌱 *Cultura:* ${body.crop}\n\n` : '\n') +
+      `Gostaria de dar continuidade à análise da proposta e falar com um consultor!`;
 
-  // Asynchronous telegram alert
-  sendTelegramAlert(body);
+    const redirectUrl = `https://wa.me/${phone}?text=${encodeURIComponent(waText)}`;
 
-  return res.status(200).json({
-    success: true,
-    redirect_url: redirectUrl,
-    whatsapp_number: phone,
-    message: waText
-  });
+    // Save simulation to history & send telegram alert
+    saveSimulation(body);
+    sendTelegramAlert(body);
+
+    return res.status(200).json({
+      success: true,
+      redirect_url: redirectUrl,
+      whatsapp_number: phone,
+      message: waText
+    });
+  }
+
+  return res.status(405).json({ error: 'Method Not Allowed' });
 };

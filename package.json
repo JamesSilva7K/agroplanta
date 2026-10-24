@@ -1,8 +1,8 @@
 {
-  "name": "saveweb2zip-com-plantaeagrocredito-com-br",
+  "name": "agroconsult",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Plantae Agrocrédito System",
+  "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
     "dev": "node --watch server/server.js",

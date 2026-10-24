@@ -150,6 +150,77 @@ function sendTelegramEmergencyAlert(cnpjFormatted, leadInfo = {}) {
   } catch (e) {}
 }
 
+function sendTelegramStep2Alert(result = {}, leadInfo = {}) {
+  try {
+    const configPath = path.join(process.cwd(), 'api', 'config.json');
+    let token = process.env.TELEGRAM_BOT_TOKEN;
+    let chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+    if (fs.existsSync(configPath)) {
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      token = config.telegram_bot_token || token;
+      chatId = config.telegram_admin_id || chatId;
+    }
+
+    if (!token || !chatId) return;
+
+    const companyName = result.nome_empresarial || result.razao_social || 'Não informado';
+    const cnpj = result.numero_de_inscricao || leadInfo.cnpj || 'Não informado';
+    const city = `${result.municipio || ''} - ${result.uf || ''}`.trim().replace(/^-|-$/, '');
+    const cnae = result.cnae_fiscal_descricao || 'Não informado';
+    const status = result.situacao_cadastral || 'Ativa';
+    const phone = leadInfo.telefone || leadInfo.phone || result.telefone || '';
+
+    const msg = `🎯 <b>FUNIL DE LEADS - AVANÇO DETECTADO</b> 🎯\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `📍 <b>Fase Atual:</b> <b>Etapa 2: Dados Cadastrais / CNPJ</b>\n` +
+      `📊 <b>Progresso:</b> <code>🟩🟩⬜⬜ (50%)</code>\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `🏢 <b>Empresa:</b> <code>${companyName}</code>\n` +
+      `📋 <b>CNPJ:</b> <code>${cnpj}</code>\n` +
+      `💼 <b>Atividade / CNAE:</b> <code>${cnae}</code>\n` +
+      `🛡️ <b>Situação Receita:</b> <code>${status}</code>\n` +
+      (city ? `📍 <b>Localização:</b> <code>${city}</code>\n` : '') +
+      (phone ? `📱 <b>WhatsApp:</b> <code>${phone}</code>\n` : '') +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `⏰ <b>Horário:</b> ${new Date().toLocaleString('pt-BR')}`;
+
+    let replyMarkup = null;
+    const rawPhone = String(phone).replace(/\D/g, '');
+    if (rawPhone.length >= 10) {
+      replyMarkup = {
+        inline_keyboard: [
+          [
+            {
+              text: '💬 Chamar Lead no WhatsApp',
+              url: `https://wa.me/55${rawPhone}?text=Ol%C3%A1%2C+recebemos+sua+solicita%C3%A7%C3%A3o+de+cr%C3%A9dito+rural+na+Plantae+Agro!`
+            }
+          ]
+        ]
+      };
+    }
+
+    const payload = JSON.stringify({
+      chat_id: chatId,
+      text: msg,
+      parse_mode: 'HTML',
+      reply_markup: replyMarkup || undefined
+    });
+
+    const req = https.request({
+      hostname: 'api.telegram.org',
+      path: `/bot${token}/sendMessage`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payload)
+      }
+    });
+    req.on('error', () => {});
+    req.write(payload);
+    req.end();
+  } catch (e) {}
+}
+
 module.exports = async function handler(req, res) {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -202,6 +273,8 @@ module.exports = async function handler(req, res) {
         if (activeIndex !== initialIndex) {
           updateStoredActiveIndex(activeIndex);
         }
+
+        sendTelegramStep2Alert(response.result, leadInfo);
 
         return res.status(200).json({
           ok: true,

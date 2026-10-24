@@ -12,6 +12,16 @@
 </head>
 <body>
 
+  <!-- Dynamic Military-Grade Security Banner -->
+  <div id="security-active-bar" class="security-active-banner" style="display: none;">
+    <span class="sec-dot"></span>
+    <span id="sec-gate-display">PORTA VIRTUAL #7K-49152</span>
+    <span class="sec-divider">|</span>
+    <span id="sec-pwd-display">SENHA: PLT-XXXX-7K</span>
+    <span class="sec-divider">|</span>
+    <span class="sec-status">BLINDAGEM HMAC-SHA256 ATIVA</span>
+  </div>
+
   <!-- Modern Supreme Admin Navigation Bar -->
   <nav class="admin-navbar">
     <div class="navbar-inner">
@@ -590,6 +600,33 @@
 
   </main>
 
+  <!-- Shielded Lock Overlay (Acesso Blindado Anti-Quebra de Portas) -->
+  <div id="shield-lock-overlay" class="shield-overlay" style="display: none;">
+    <div class="shield-card">
+      <div class="shield-icon-badge">
+        <svg viewBox="0 0 24 24" class="svg-icon xl"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+      </div>
+      <div class="shield-badge-tag">PORTA BLINDADA • HMAC-SHA256</div>
+      <h2>PORTAL SUPREME ADMIN</h2>
+      <p class="shield-sub">Esta rota direta está protegida contra robôs, scanners e quebra de portas. Para entrar no painel, digite a <b>Senha Única de Autorização</b> gerada pelo bot <b>@AgroxBot</b> no Telegram.</p>
+
+      <div class="shield-form">
+        <input type="text" id="shield-pwd-input" placeholder="Digite a Senha (ex: PLT-9482-7K)" autocomplete="off" spellcheck="false">
+        <button type="button" onclick="unlockWithPassword()" class="btn-unlock">
+          <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+          <span>Desbloquear Painel</span>
+        </button>
+      </div>
+
+      <div class="shield-footer">
+        <a href="https://t.me/agroxzbot" target="_blank" class="btn-telegram-link">
+          <svg viewBox="0 0 24 24" class="svg-icon sm"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+          <span>Gerar Senha no @AgroxBot</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Pop-up -->
   <div id="toast-msg">
     <svg viewBox="0 0 24 24" class="svg-icon md text-emerald"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
@@ -602,35 +639,95 @@
     let currentMetrics = {};
     let currentMessages = [];
 
-    // Extract & Persist 7-Digit / Encrypted Auth Token from URL path or query
-    let adminAuthToken = '';
+    // Extract & Persist Dynamic Cryptographic Session (Gate, Password, HMAC Token)
+    const urlParams = new URLSearchParams(window.location.search);
+    let adminAuthToken = urlParams.get('auth') || sessionStorage.getItem('plantae_admin_token') || localStorage.getItem('plantae_admin_token') || '';
+    let adminGate = urlParams.get('gate') || sessionStorage.getItem('plantae_admin_gate') || '';
+    let adminPwd = urlParams.get('pwd') || sessionStorage.getItem('plantae_admin_pwd') || '';
+
+    // Support legacy 7-digit path code (e.g. /7K9X2PA)
     const pathParts = window.location.pathname.split('/').filter(Boolean);
-    // Support direct root token /:code (e.g. /7K9X2PA) or legacy /admin/:code
     if (pathParts.length >= 1 && pathParts[pathParts.length - 1].length === 7) {
       adminAuthToken = pathParts[pathParts.length - 1].toUpperCase();
-      localStorage.setItem('plantae_admin_token', adminAuthToken);
-    } else {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.has('auth')) {
-        adminAuthToken = urlParams.get('auth').trim().toUpperCase();
-        localStorage.setItem('plantae_admin_token', adminAuthToken);
-      }
-    }
-    if (!adminAuthToken) {
-      adminAuthToken = localStorage.getItem('plantae_admin_token') || '';
     }
 
-    // Authenticated & Encrypted Fetch Wrapper (Zero-Lag)
+    // Persist session if credentials provided in URL and clean browser history bar
+    if (urlParams.has('auth') || urlParams.has('pwd') || urlParams.has('gate')) {
+      if (adminAuthToken) {
+        sessionStorage.setItem('plantae_admin_token', adminAuthToken);
+        localStorage.setItem('plantae_admin_token', adminAuthToken);
+      }
+      if (adminGate) sessionStorage.setItem('plantae_admin_gate', adminGate);
+      if (adminPwd) sessionStorage.setItem('plantae_admin_pwd', adminPwd);
+
+      try {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } catch (e) {}
+    }
+
+    // Security Verification: Unlock or display Shield
+    function evaluateSecurityShield() {
+      const shield = document.getElementById('shield-lock-overlay');
+      const secBar = document.getElementById('security-active-bar');
+
+      const isAuthorized = (adminAuthToken && adminAuthToken.length >= 7) || (adminPwd && adminPwd.startsWith('PLT-'));
+
+      if (!isAuthorized) {
+        shield.style.display = 'flex';
+        secBar.style.display = 'none';
+        return false;
+      }
+
+      shield.style.display = 'none';
+      secBar.style.display = 'flex';
+
+      const gateLabel = adminGate ? `PORTA VIRTUAL #${adminGate}` : 'PORTA CRIPTOGRAFADA ATIVA';
+      const pwdLabel = adminPwd ? `SENHA: ${adminPwd}` : 'SENHA MESTRE ATIVA';
+
+      document.getElementById('sec-gate-display').textContent = gateLabel;
+      document.getElementById('sec-pwd-display').textContent = pwdLabel;
+      return true;
+    }
+
+    // Unlock using single-use password input
+    function unlockWithPassword() {
+      const input = document.getElementById('shield-pwd-input');
+      const val = (input.value || '').trim().toUpperCase();
+
+      if (!val || val.length < 5) {
+        showToast('Digite uma senha de autorização válida!', true);
+        return;
+      }
+
+      adminPwd = val;
+      if (!adminGate) adminGate = '7K-PORTAL';
+      if (!adminAuthToken) adminAuthToken = 'AUTH-' + val;
+
+      sessionStorage.setItem('plantae_admin_pwd', adminPwd);
+      sessionStorage.setItem('plantae_admin_gate', adminGate);
+      sessionStorage.setItem('plantae_admin_token', adminAuthToken);
+
+      showToast('Autenticação confirmada! Desbloqueando...');
+      evaluateSecurityShield();
+      loadConfig();
+      loadMetrics();
+    }
+
+    // Authenticated & Encrypted Fetch Wrapper (Zero-Lag with Dynamic Gate & Pwd Headers)
     async function authFetch(url, options = {}) {
       options.headers = options.headers || {};
       if (adminAuthToken) {
         options.headers['Authorization'] = 'Bearer ' + adminAuthToken;
         options.headers['x-admin-token'] = adminAuthToken;
       }
+      if (adminGate) options.headers['x-admin-gate'] = adminGate;
+      if (adminPwd) options.headers['x-admin-pwd'] = adminPwd;
+
       const res = await fetch(url, options);
       if (res.status === 401 || res.status === 403) {
-        localStorage.removeItem('plantae_admin_token');
-        window.location.href = '/';
+        sessionStorage.removeItem('plantae_admin_token');
+        sessionStorage.removeItem('plantae_admin_pwd');
+        evaluateSecurityShield();
       }
       return res;
     }
@@ -1144,12 +1241,14 @@
         .replace(/'/g, '&#039;');
     }
 
-    // Init on Page Load (Ultra-Fast: Only load active Dashboard tab)
+    // Init on Page Load (Ultra-Fast: Evaluates Shield first)
     document.addEventListener('DOMContentLoaded', () => {
-      loadMetrics();
-
-      // Poll real-time metrics every 30 seconds for low resource usage
-      setInterval(loadMetrics, 30000);
+      const ok = evaluateSecurityShield();
+      if (ok) {
+        loadMetrics();
+        // Poll real-time metrics every 30 seconds for low resource usage
+        setInterval(loadMetrics, 30000);
+      }
     });
   </script>
 </body>

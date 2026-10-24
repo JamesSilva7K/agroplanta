@@ -1025,3 +1025,183 @@ body {
     overflow-x: auto;
   }
 }
+
+/* Shielded Lock Overlay & Military Auth Security */
+.shield-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: #080d14 radial-gradient(circle at 50% 30%, rgba(0, 168, 112, 0.18) 0%, rgba(1, 54, 68, 0.45) 50%, #080d14 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.shield-card {
+  max-width: 520px;
+  width: 100%;
+  background: rgba(13, 20, 36, 0.95);
+  border: 1px solid rgba(0, 168, 112, 0.4);
+  border-radius: 24px;
+  padding: 44px 36px;
+  text-align: center;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(0, 168, 112, 0.25);
+  animation: shieldPulse 3s infinite alternate;
+}
+
+@keyframes shieldPulse {
+  0% { box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 25px rgba(0, 168, 112, 0.2); }
+  100% { box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 45px rgba(0, 168, 112, 0.4); }
+}
+
+.shield-icon-badge {
+  width: 76px;
+  height: 76px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(0, 168, 112, 0.3), rgba(1, 54, 68, 0.6));
+  border: 1px solid rgba(0, 168, 112, 0.6);
+  box-shadow: 0 0 30px rgba(0, 168, 112, 0.45);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.shield-icon-badge svg {
+  width: 40px;
+  height: 40px;
+  fill: #00A870;
+}
+
+.shield-badge-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: rgba(0, 168, 112, 0.15);
+  border: 1px solid rgba(0, 168, 112, 0.4);
+  color: #10b981;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 16px;
+}
+
+.shield-card h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+
+.shield-sub {
+  font-size: 13.5px;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+.shield-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.shield-form input {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 168, 112, 0.4);
+  background: rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  text-align: center;
+  letter-spacing: 0.1em;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.shield-form input:focus {
+  border-color: #00A870;
+  box-shadow: 0 0 20px rgba(0, 168, 112, 0.4);
+}
+
+.btn-unlock {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #00A870 0%, #008256 100%);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 6px 20px rgba(0, 168, 112, 0.4);
+  transition: all 0.2s ease;
+}
+
+.btn-unlock:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 26px rgba(0, 168, 112, 0.6);
+}
+
+.btn-telegram-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #38bdf8;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  transition: all 0.2s ease;
+}
+
+.btn-telegram-link:hover {
+  background: rgba(56, 189, 248, 0.2);
+}
+
+/* Active Security Top Banner */
+.security-active-banner {
+  background: linear-gradient(90deg, rgba(1, 54, 68, 0.95), rgba(0, 168, 112, 0.2), rgba(1, 54, 68, 0.95));
+  border-bottom: 1px solid rgba(0, 168, 112, 0.35);
+  padding: 8px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.sec-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 10px #10b981;
+  animation: pulseDot 2s infinite;
+}
+
+.sec-divider {
+  color: rgba(255, 255, 255, 0.2);
+}
+

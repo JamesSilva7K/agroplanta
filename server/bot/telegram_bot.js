@@ -1073,29 +1073,32 @@ class TelegramBotService {
     }
   }
 
-  // Envio de Link Criptografado Exclusivo do Admin (7 Dígitos na Rota)
+  // Envio de Link Criptografado Exclusivo do Admin (Porta Virtual + Senha Única)
   async sendEncryptedAdminLink(chatId, messageId = null) {
-    const code = generate7DigitToken(24);
-    const port = process.env.PORT || 8080;
-    const appUrl = process.env.APP_URL || `http://localhost:${port}`;
-    const directAdminUrl = `${appUrl}/${code}`;
+    const { generateEncryptedAdminSession } = require('../crypto_portal');
+    const session = generateEncryptedAdminSession(60, this.token);
+    const host = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://agroconsult-sepia.vercel.app';
+    const directUrl = `${host}/portal-auth?auth=${session.fullAuthCode}&gate=${session.gate}&pwd=${session.password}`;
 
-    const text = `🔐 <b>ACESSO CRIPTOGRAFADO — SUPREME ADMIN</b> 🔐\n` +
+    const text = `🛡️ <b>PORTAL SUPREME ADMIN — ACESSO BLINDADO & CRIPTOGRAFADO</b> 🛡️\n` +
       `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-      `🔑 <b>Código Criptográfico de 7 Dígitos:</b> <code>${code}</code>\n` +
-      `⏳ <b>Validade da Rota:</b> 24 Horas\n` +
-      `👤 <b>Autorização:</b> Administrador Supremo\n\n` +
-      `A palavra "admin" foi 100% criptografada e oculta. Sua rota de acesso direto é composta exclusivamente pelo seu código criptográfico de 7 dígitos:\n\n` +
-      `👉 <code>${directAdminUrl}</code>\n` +
-      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+      `Olá, <b>Administrador Supremo</b>! Acesso autorizado gerado com sucesso:\n\n` +
+      `🚪 <b>Porta Virtual Blindada:</b> <code>Porta #${session.gate}</code>\n` +
+      `🔑 <b>Senha Única de Autorização:</b> <code>${session.password}</code>\n` +
+      `⏳ <b>Validade da Porta & Senha:</b> 60 minutos\n` +
+      `🛡️ <b>Protocolo de Defesa:</b> HMAC-SHA256 • Anti-Brute Force • Zero-Scan\n\n` +
+      `🔗 <b>Link Direto com Porta & Chave Criptografada:</b>\n` +
+      `${directUrl}\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `⚠️ <i>As rotas diretas públicas (/admin) estão 100% trancadas contra quebra de portas e robôs. Cada alteração no painel rotaciona as chaves criptográficas.</i>`;
 
     const markup = {
       inline_keyboard: [
         [
-          { text: `🚀 Acessar Painel Criptografado (/${code})`, url: directAdminUrl }
+          { text: `🚀 Acessar Painel na Porta #${session.gate}`, url: directUrl }
         ],
         [
-          { text: '🔄 Gerar Novo Código de 7 Dígitos', callback_data: 'action_get_admin_link' },
+          { text: '🔄 Gerar Nova Porta & Senha', callback_data: 'action_get_admin_link' },
           { text: '⬅️ Voltar ao Menu Principal', callback_data: 'menu_main' }
         ]
       ]

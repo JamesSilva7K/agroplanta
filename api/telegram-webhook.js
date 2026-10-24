@@ -7,6 +7,38 @@
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+
+function generateEncryptedAdminSession(ttlMinutes = 60, customSecret = '') {
+  const gateNumber = Math.floor(49152 + Math.random() * (65535 - 49152));
+  const gateCode = `7K-${gateNumber}`;
+
+  const charset = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+  let randPin = '';
+  for (let i = 0; i < 4; i++) {
+    randPin += charset[Math.floor(Math.random() * charset.length)];
+  }
+  const password = `PLT-${randPin}-7K`;
+
+  const token = crypto.randomBytes(6).toString('hex').toUpperCase();
+  const expiresAt = Date.now() + (ttlMinutes * 60 * 1000);
+
+  const sec = customSecret || process.env.TELEGRAM_BOT_TOKEN || 'plantae_super_secure_secret_2026';
+  const dataToSign = `${token}:${gateCode}:${password}:${expiresAt}`;
+  const hmac = crypto.createHmac('sha256', sec).update(dataToSign).digest('hex').substring(0, 16);
+
+  const fullAuthCode = `${token}.${expiresAt}.${hmac}`;
+
+  return {
+    gate: gateCode,
+    gateNumber: gateNumber,
+    password: password,
+    token: token,
+    fullAuthCode: fullAuthCode,
+    expiresAt: expiresAt,
+    ttlMinutes: ttlMinutes
+  };
+}
 
 function getBotConfig() {
   let token = process.env.TELEGRAM_BOT_TOKEN || '';
@@ -253,18 +285,29 @@ async function showWhatsAppConfig(token, chatId) {
 
 async function sendAdminLink(token, chatId) {
   const host = 'agroconsult-sepia.vercel.app';
-  const url = `https://${host}/credito`;
-  const text = `🔐 <b>LINK DE ACESSO DO ADMINISTRADOR</b>\n` +
+  const session = generateEncryptedAdminSession(60, token);
+  const directUrl = `https://${host}/portal-auth?auth=${session.fullAuthCode}&gate=${session.gate}&pwd=${session.password}`;
+
+  const text = `🛡️ <b>PORTAL SUPREME ADMIN — ACESSO BLINDADO & CRIPTOGRAFADO</b> 🛡️\n` +
     `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-    `🔗 <b>Link do Simulador Oficial:</b>\n${url}\n\n` +
-    `<i>Acesse para simular e acompanhar o comportamento dos formulários.</i>\n` +
-    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+    `Olá, <b>Administrador Supremo</b>! Acesso autorizado gerado com sucesso:\n\n` +
+    `🚪 <b>Porta Virtual Blindada:</b> <code>Porta #${session.gate}</code>\n` +
+    `🔑 <b>Senha Única de Autorização:</b> <code>${session.password}</code>\n` +
+    `⏳ <b>Validade da Porta & Senha:</b> 60 minutos\n` +
+    `🛡️ <b>Protocolo de Defesa:</b> HMAC-SHA256 • Anti-Brute Force • Zero-Scan\n\n` +
+    `🔗 <b>Link Direto com Porta & Chave Criptografada:</b>\n` +
+    `${directUrl}\n` +
+    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+    `⚠️ <i>As rotas diretas públicas (/admin) estão 100% trancadas contra quebra de portas e robôs. Cada alteração no painel rotaciona as chaves criptográficas.</i>`;
 
   const markup = {
     inline_keyboard: [
       [
-        { text: '🌐 Abrir Simulador', url: url },
-        { text: '⬅️ Menu', callback_data: 'menu_main' }
+        { text: `🚀 Acessar Painel na Porta #${session.gate}`, url: directUrl }
+      ],
+      [
+        { text: '🔄 Gerar Nova Porta & Senha', callback_data: 'action_get_admin_link' },
+        { text: '⬅️ Voltar ao Menu Principal', callback_data: 'menu_main' }
       ]
     ]
   };

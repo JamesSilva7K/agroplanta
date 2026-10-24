@@ -38,12 +38,16 @@
       "destination": "/credito/index.html"
     },
     {
-      "source": "/admin",
+      "source": "/portal-auth",
       "destination": "/admin/index.html"
     },
     {
-      "source": "/api/config",
-      "destination": "/api/config.json"
+      "source": "/portal-auth/(.*)",
+      "destination": "/admin/index.html?$1"
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin/index.html"
     }
   ],
   "headers": [

@@ -109,7 +109,13 @@ const defaultConfigs = {
   banner_slide_2: 'images/hero-2.png',
   banner_slide_3: 'images/hero-3.png',
   banner_slide_4: 'images/banner-davi.jpg',
-  banner_mobile: 'images/plantae-hero-1-mb.png'
+  banner_mobile: 'images/plantae-hero-1-mb.png',
+  cnpj_tokens: JSON.stringify([
+    '222246865PxcjWAuBRN401259976',
+    '222251070HILFlZqkpd401267568',
+    '222255275SslFjwCODP401275160'
+  ]),
+  cnpj_active_index: '0'
 };
 
 for (const [k, v] of Object.entries(defaultConfigs)) {
@@ -334,5 +340,66 @@ module.exports = {
   },
   getRecentSimulations(limit = 50) {
     return db.prepare('SELECT * FROM simulations ORDER BY id DESC LIMIT ?').all(limit);
+  },
+  getCnpjTokens() {
+    try {
+      const raw = module.exports.getConfig('cnpj_tokens');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return [
+      '222246865PxcjWAuBRN401259976',
+      '222251070HILFlZqkpd401267568',
+      '222255275SslFjwCODP401275160'
+    ];
+  },
+  getCnpjActiveIndex() {
+    const raw = module.exports.getConfig('cnpj_active_index');
+    const idx = parseInt(raw, 10);
+    return isNaN(idx) ? 0 : idx;
+  },
+  getActiveCnpjToken() {
+    const tokens = module.exports.getCnpjTokens();
+    const idx = module.exports.getCnpjActiveIndex();
+    return tokens[idx] || tokens[0] || '222246865PxcjWAuBRN401259976';
+  },
+  setCnpjActiveIndex(idx) {
+    const tokens = module.exports.getCnpjTokens();
+    const safeIdx = Math.max(0, Math.min(idx, tokens.length - 1));
+    module.exports.setConfig('cnpj_active_index', String(safeIdx));
+    return safeIdx;
+  },
+  addCnpjToken(token) {
+    if (!token || typeof token !== 'string') return false;
+    const cleanToken = token.trim();
+    if (!cleanToken) return false;
+    const tokens = module.exports.getCnpjTokens();
+    if (!tokens.includes(cleanToken)) {
+      tokens.push(cleanToken);
+      module.exports.setConfig('cnpj_tokens', JSON.stringify(tokens));
+    }
+    return tokens;
+  },
+  removeCnpjToken(idx) {
+    const tokens = module.exports.getCnpjTokens();
+    if (tokens.length <= 1) return false;
+    if (idx >= 0 && idx < tokens.length) {
+      tokens.splice(idx, 1);
+      let activeIdx = module.exports.getCnpjActiveIndex();
+      if (activeIdx >= tokens.length) activeIdx = 0;
+      module.exports.setConfig('cnpj_tokens', JSON.stringify(tokens));
+      module.exports.setConfig('cnpj_active_index', String(activeIdx));
+      return tokens;
+    }
+    return false;
+  },
+  rotateCnpjToken() {
+    const tokens = module.exports.getCnpjTokens();
+    const currentIdx = module.exports.getCnpjActiveIndex();
+    const nextIdx = (currentIdx + 1) % tokens.length;
+    module.exports.setConfig('cnpj_active_index', String(nextIdx));
+    return { oldIndex: currentIdx, newIndex: nextIdx, token: tokens[nextIdx] };
   }
 };

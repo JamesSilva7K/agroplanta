@@ -15,10 +15,17 @@ const {
   updateContextMessage, 
   resetContextMessage,
   getRecentLeads,
-  getSystemStats
+  getSystemStats,
+  getCnpjTokens,
+  getCnpjActiveIndex,
+  setCnpjActiveIndex,
+  addCnpjToken,
+  removeCnpjToken,
+  rotateCnpjToken
 } = require('../db');
 const { getMetrics } = require('../analytics');
 const { generate7DigitToken, revokeAllAdminSessions } = require('../security');
+const { testAllTokens } = require('../cnpj_service');
 
 function formatPhoneDisplay(raw) {
   if (!raw) return '(18) 98111-5624';
@@ -49,6 +56,8 @@ function syncStaticConfigFile(updatedProps = {}) {
       banner_slide_3: allConfigs.banner_slide_3 || 'images/hero-3.png',
       banner_slide_4: allConfigs.banner_slide_4 || 'images/banner-davi.jpg',
       banner_mobile: allConfigs.banner_mobile || 'images/plantae-hero-1-mb.png',
+      cnpj_tokens: getCnpjTokens(),
+      cnpj_active_index: getCnpjActiveIndex(),
       updated_at: new Date().toISOString(),
       ...updatedProps
     };
@@ -227,16 +236,16 @@ class TelegramBotService {
     return {
       keyboard: [
         [
-          { text: '🔐 Gerar Link Criptografado' },
-          { text: '📊 Métricas em Tempo Real' }
+          { text: '🏢 Tokens CNPJ' },
+          { text: '🔐 Gerar Link Criptografado' }
         ],
         [
+          { text: '📊 Métricas em Tempo Real' },
           { text: '📱 WhatsApp' },
-          { text: '💬 Mensagens' },
-          { text: '📋 Últimos Leads' }
+          { text: '💬 Mensagens' }
         ],
         [
-          { text: '🧹 Limpar Testes' },
+          { text: '📋 Últimos Leads' },
           { text: '⚙️ Diagnóstico' },
           { text: '🌿 Menu Principal' }
         ]
@@ -251,7 +260,8 @@ class TelegramBotService {
     return {
       inline_keyboard: [
         [
-          { text: '🔐 Gerar Link Criptografado do Admin', callback_data: 'action_get_admin_link' }
+          { text: '🏢 Gestão de Tokens de CNPJ (Receita)', callback_data: 'menu_cnpj_tokens' },
+          { text: '🔐 Link do Admin', callback_data: 'action_get_admin_link' }
         ],
         [
           { text: '📊 Métricas em Tempo Real', callback_data: 'menu_metrics_24h' },
@@ -722,6 +732,180 @@ class TelegramBotService {
     }
   }
 
+  // --- GERENCIAMENTO INTELIGENTE DE TOKENS CNPJ (RECEITA FEDERAL) ---
+  async showCnpjTokensMenu(chatId, messageId = null) {
+    const tokens = getCnpjTokens();
+    const activeIdx = getCnpjActiveIndex();
+    const activeToken = tokens[activeIdx] || tokens[0] || 'Nenhum';
+
+    let text = `🏢 <b>GERENCIAMENTO DE TOKENS — API CNPJ RECEITA</b>\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `Consulta profunda e inteligente de empresas/agroindústrias diretamente no simulador de crédito.\n\n` +
+      `🟢 <b>Token Ativo Atual:</b>\n` +
+      `• <code>${activeToken}</code> (Slot #${activeIdx + 1})\n\n` +
+      `📋 <b>Pool de Tokens Cadastrados:</b>\n`;
+
+    tokens.forEach((t, i) => {
+      const isAct = i === activeIdx;
+      const statusIcon = isAct ? '🟢 [ATIVO]' : '⚪ [STANDBY]';
+      const masked = t.substring(0, 9) + '...' + t.slice(-5);
+      text += ` ${i + 1}. <code>${masked}</code> ${statusIcon}\n`;
+    });
+
+    text += `\n⚡ <b>Failover Automático Ativo:</b> Se o token ativo esgotar os créditos, o sistema pula para o próximo automaticamente e avisa você aqui no Telegram!\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+    // Botões para alternar token ativo
+    const switchButtons = [];
+    tokens.forEach((t, i) => {
+      const isAct = i === activeIdx;
+      switchButtons.push({
+        text: isAct ? `✅ Token #${i + 1} (Ativo)` : `🔄 Ativar #${i + 1}`,
+        callback_data: `action_set_active_token_${i}`
+      });
+    });
+
+    const switchRows = [];
+    for (let i = 0; i < switchButtons.length; i += 2) {
+      switchRows.push(switchButtons.slice(i, i + 2));
+    }
+
+    const markup = {
+      inline_keyboard: [
+        ...switchRows,
+        [
+          { text: '🔍 Testar Saldo / Conexão (0 Créditos)', callback_data: 'action_test_cnpj_tokens' }
+        ],
+        [
+          { text: '➕ Inserir Novo Token', callback_data: 'action_add_cnpj_token' }
+        ],
+        [
+          { text: '⬅️ Voltar ao Menu Principal', callback_data: 'menu_main' }
+        ]
+      ]
+    };
+
+    if (messageId) {
+      await this.editMessage(chatId, messageId, text, markup);
+    } else {
+      await this.sendMessage(chatId, text, markup);
+    }
+  }
+
+  async testCnpjTokens(chatId, messageId = null) {
+    if (messageId) {
+      await this.editMessage(
+        chatId, 
+        messageId, 
+        '⏳ <b>Testando conexão e saldo dos tokens com a Receita Federal...</b>\n<i>(Utilizando parâmetro last_update=2 com consumo de 0 créditos)</i>'
+      );
+    } else {
+      await this.sendMessage(
+        chatId, 
+        '⏳ <b>Testando conexão e saldo dos tokens com a Receita Federal...</b>'
+      );
+    }
+
+    const results = await testAllTokens();
+
+    let text = `🔍 <b>RELATÓRIO DE STATUS DOS TOKENS CNPJ</b>\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `<i>Consulta técnica via WebService Hub do Desenvolvedor (0 créditos consumidos):</i>\n\n`;
+
+    results.forEach((r, i) => {
+      const actBadge = r.is_active ? ' [🟢 ATIVO]' : '';
+      const icon = r.status === 'OK' ? '✅' : '❌';
+      text += `${icon} <b>Token #${i + 1}:</b> <code>${r.masked_token}</code>${actBadge}\n` +
+        ` • Status: <b>${r.message}</b>\n` +
+        ` • Latência: <b>${r.latency_ms}ms</b>\n\n`;
+    });
+
+    text += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+    const markup = {
+      inline_keyboard: [
+        [
+          { text: '🔄 Testar Novamente', callback_data: 'action_test_cnpj_tokens' },
+          { text: '🏢 Menu de Tokens', callback_data: 'menu_cnpj_tokens' }
+        ],
+        [
+          { text: '⬅️ Voltar ao Menu Principal', callback_data: 'menu_main' }
+        ]
+      ]
+    };
+
+    await this.sendMessage(chatId, text, markup);
+  }
+
+  async activateCnpjToken(chatId, messageId, targetIdx) {
+    setCnpjActiveIndex(targetIdx);
+    syncStaticConfigFile({ cnpj_active_index: targetIdx });
+    await this.showCnpjTokensMenu(chatId, messageId);
+  }
+
+  // Notificação de Rotação Automática de Token por Falta de Crédito
+  async notifyTokenRotation(oldIndex, newIndex, reason) {
+    const targetChat = this.adminChatId || getConfig('telegram_admin_id');
+    if (!targetChat || !this.token) return;
+
+    const tokens = getCnpjTokens();
+    const oldMasked = (tokens[oldIndex] || '').substring(0, 9) + '...';
+    const newMasked = (tokens[newIndex] || '').substring(0, 9) + '...';
+
+    const msg = `⚠️ <b>AVISO: TOKEN DE CNPJ ROTACIONADO AUTOMATICAMENTE!</b>\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `O Token #${oldIndex + 1} (<code>${oldMasked}</code>) retornou:\n` +
+      `<i>"${reason}"</i>\n\n` +
+      `🔄 <b>Ação Inteligente do Sistema:</b>\n` +
+      `O sistema alternou automaticamente para o Token #${newIndex + 1} (<code>${newMasked}</code>).\n` +
+      `As consultas continuam normalmente para os leads no simulador.\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+    const markup = {
+      inline_keyboard: [
+        [
+          { text: '🏢 Ver Tokens de CNPJ', callback_data: 'menu_cnpj_tokens' },
+          { text: '🔍 Testar Saldo', callback_data: 'action_test_cnpj_tokens' }
+        ]
+      ]
+    };
+
+    await this.sendMessage(targetChat, msg, markup);
+  }
+
+  // Alerta Crítico quando TODOS os tokens esgotam o saldo
+  async notifyTokensExhausted(cnpjFormatted, leadInfo = {}, exhaustedList = []) {
+    const targetChat = this.adminChatId || getConfig('telegram_admin_id');
+    if (!targetChat || !this.token) return;
+
+    const msg = `🚨 <b>ALERTA CRÍTICO: TOKENS DE CNPJ ESGOTADOS!</b> 🚨\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `⚠️ <b>Atenção Administrador Supremo:</b>\n` +
+      `Todos os tokens cadastrados para consulta de CNPJ na Receita Federal estão sem saldo de créditos ou inválidos!\n\n` +
+      `🏢 <b>CNPJ Consultado:</b> <code>${cnpjFormatted}</code>\n` +
+      `👤 <b>Lead em Atendimento:</b> ${leadInfo.nome || leadInfo.name || 'Produtor Rural no Simulador'}\n` +
+      `📱 <b>WhatsApp do Lead:</b> ${leadInfo.telefone || leadInfo.phone || 'Não informado'}\n` +
+      `⏰ <b>Horário:</b> ${new Date().toLocaleString('pt-BR')}\n\n` +
+      `🛡️ <b>Mecanismo de Proteção Ativado:</b>\n` +
+      `O simulador não quebrou nem exibiu erros técnicos para o produtor. Ele foi guiado suavemente para atendimento VIP no WhatsApp da empresa!\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `👉 <i>Toque nos botões abaixo para inserir um novo token ou verificar o status:</i>`;
+
+    const markup = {
+      inline_keyboard: [
+        [
+          { text: '➕ Inserir Novo Token', callback_data: 'action_add_cnpj_token' },
+          { text: '🏢 Painel de Tokens', callback_data: 'menu_cnpj_tokens' }
+        ],
+        [
+          { text: '🔍 Testar Saldo Agora', callback_data: 'action_test_cnpj_tokens' }
+        ]
+      ]
+    };
+
+    await this.sendMessage(targetChat, msg, markup);
+  }
+
   // --- POLLING & EVENT DISPATCHER ---
   async startPolling() {
     if (this.isPolling) return;
@@ -831,8 +1015,29 @@ class TelegramBotService {
       return;
     }
 
+    // State machine: Adding New CNPJ Token
+    if (userState && userState.state === 'WAITING_CNPJ_TOKEN') {
+      const cleanToken = rawText.trim();
+      if (cleanToken.length < 15) {
+        await this.sendMessage(chatId, '⚠️ <b>Token inválido!</b> O token fornecido pela Hub do Desenvolvedor costuma ter 25+ caracteres.\n\nEnvie o token correto:');
+        return;
+      }
+      addCnpjToken(cleanToken);
+      syncStaticConfigFile({ cnpj_tokens: getCnpjTokens() });
+      delete this.userStates[chatId];
+      await this.sendMessage(chatId, `✅ <b>NOVO TOKEN DE CNPJ CADASTRADO COM SUCESSO!</b>\n<code>${cleanToken}</code>`);
+      await this.showCnpjTokensMenu(chatId, null);
+      return;
+    }
+
     // Limpa estado anterior se o usuário tocou em outro botão
     delete this.userStates[chatId];
+
+    // 0. Tokens de CNPJ
+    if (text.includes('token') || text.includes('cnpj')) {
+      await this.showCnpjTokensMenu(chatId, null);
+      return;
+    }
 
     // 1. Link Criptografado do Admin
     if (text.includes('link') || text.includes('criptografad') || text.includes('admin') || text.includes('acesso')) {
@@ -1043,6 +1248,34 @@ class TelegramBotService {
 
     if (data === 'action_revoke_sessions') {
       await this.handleRevokeSessions(chatId, messageId);
+      return;
+    }
+
+    if (data === 'menu_cnpj_tokens') {
+      await this.showCnpjTokensMenu(chatId, messageId);
+      return;
+    }
+
+    if (data === 'action_test_cnpj_tokens') {
+      await this.testCnpjTokens(chatId, messageId);
+      return;
+    }
+
+    if (data === 'action_add_cnpj_token') {
+      this.userStates[chatId] = { state: 'WAITING_CNPJ_TOKEN' };
+      await this.sendMessage(
+        chatId,
+        '✏️ <b>INSERIR NOVO TOKEN DE CONSULTA CNPJ</b>\n' +
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+        'Copie e envie o token gerado no painel da Hub do Desenvolvedor (ex: <code>222255275SslFjwCODP401275160</code>).\n\n' +
+        '<i>Envie o token como sua próxima mensagem de texto:</i>'
+      );
+      return;
+    }
+
+    if (data.startsWith('action_set_active_token_')) {
+      const idx = parseInt(data.replace('action_set_active_token_', ''), 10);
+      await this.activateCnpjToken(chatId, messageId, idx);
       return;
     }
 

@@ -24,6 +24,7 @@ const {
 const { getMetrics } = require('./analytics');
 const { telegramBot } = require('./bot/telegram_bot');
 const { requireAdminAuth, generate7DigitToken, validateAdminToken } = require('./security');
+const { consultCnpjWithAutoFallback, testAllTokens, isValidCNPJ, formatCNPJ } = require('./cnpj_service');
 const { db } = require('./db');
 
 function getDefaultWhatsApp() {
@@ -333,6 +334,33 @@ app.post('/api/simulate', (req, res) => {
   } catch (err) {
     console.error('Error handling simulation:', err);
     return res.status(500).json({ error: 'Erro ao processar simulação' });
+  }
+});
+
+// CNPJ Consultation API (Multi-Token Failover & Telegram Alerts)
+app.all('/api/cnpj', async (req, res) => {
+  try {
+    const cnpjRaw = req.method === 'GET' ? req.query.cnpj : (req.body && req.body.cnpj);
+    const leadInfo = req.method === 'POST' ? req.body : {};
+    if (!cnpjRaw) {
+      return res.status(400).json({ success: false, message: 'CNPJ é obrigatório.' });
+    }
+
+    const result = await consultCnpjWithAutoFallback(cnpjRaw, leadInfo, telegramBot);
+    return res.json(result);
+  } catch (err) {
+    console.error('Error in /api/cnpj:', err);
+    return res.status(500).json({ success: false, message: 'Erro interno ao consultar CNPJ' });
+  }
+});
+
+// Admin endpoint to test all CNPJ tokens without consuming credits
+app.get('/api/cnpj/test', requireAdminAuth, async (req, res) => {
+  try {
+    const results = await testAllTokens();
+    return res.json({ success: true, tokens: results });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 

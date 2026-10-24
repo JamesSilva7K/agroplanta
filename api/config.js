@@ -8,7 +8,7 @@ const path = require('path');
 const https = require('https');
 
 function getConfigFile() {
-  const primaryPath = path.join(process.cwd(), 'api', 'config.json');
+  const primaryPath = path.join(process.cwd(), 'data', 'config.json');
   if (fs.existsSync(primaryPath)) {
     try {
       return JSON.parse(fs.readFileSync(primaryPath, 'utf8'));
@@ -33,7 +33,7 @@ function getConfigFile() {
 
 function saveConfigFile(data) {
   try {
-    const configPath = path.join(process.cwd(), 'api', 'config.json');
+    const configPath = path.join(process.cwd(), 'data', 'config.json');
     fs.writeFileSync(configPath, JSON.stringify(data, null, 2), 'utf8');
   } catch (e) {}
 }

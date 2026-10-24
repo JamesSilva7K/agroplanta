@@ -294,9 +294,18 @@
         const href = a.getAttribute('href') || '';
         const lowerHref = href.toLowerCase();
         const text = (a.textContent || '').trim();
+        const lowerText = text.toLowerCase();
+
+        // Keep ACESSE SUA CONTA / Internet Banking Portal clean & direct
+        if (lowerHref.includes('ib.plantaeagrocredito') || /acesse\s+sua\s+conta/i.test(lowerText) || a.classList.contains('btn-acesse-conta')) {
+          a.setAttribute('href', 'https://ib.plantaeagrocredito.com.br/');
+          a.setAttribute('target', '_blank');
+          a.setAttribute('rel', 'noopener noreferrer');
+          return;
+        }
 
         // Skip internal portals, legitimate anchors, and telephone/mail links
-        if (lowerHref.includes('softsaaspif') || lowerHref.includes('ib.plantaeagrocredito')) return;
+        if (lowerHref.includes('softsaaspif')) return;
         if (lowerHref.startsWith('#') || lowerHref.startsWith('tel:') || lowerHref.startsWith('mailto:')) return;
         if (lowerHref.includes('instagram.com') || lowerHref.includes('facebook.com') || lowerHref.includes('linkedin.com')) return;
 
@@ -365,6 +374,27 @@
       const href = target.getAttribute('href') || '';
       const lowerHref = href.toLowerCase();
       const text = (target.textContent || '').trim();
+      const lowerText = text.toLowerCase();
+
+      // Check for ACESSE SUA CONTA / Internet Banking Portal (MUST NEVER REDIRECT TO WHATSAPP)
+      const isAcesseConta = 
+        lowerHref.includes('ib.plantaeagrocredito.com.br') ||
+        target.classList.contains('btn-acesse-conta') ||
+        target.closest('.btn-acesse-conta') ||
+        /acesse\s+sua\s+conta/i.test(lowerText);
+
+      if (isAcesseConta) {
+        trackEvent('portal_access', {
+          action_key: 'acesse_sua_conta',
+          button_text: text || 'ACESSE SUA CONTA'
+        });
+        if (!target.getAttribute('href') || target.getAttribute('href') === '#' || target.getAttribute('href').includes('whatsapp')) {
+          target.setAttribute('href', 'https://ib.plantaeagrocredito.com.br/');
+        }
+        target.setAttribute('target', '_blank');
+        target.setAttribute('rel', 'noopener noreferrer');
+        return; // Allow natural browser navigation directly to Internet Banking
+      }
 
       // Check for Social Media Links
       if (lowerHref.includes('instagram.com')) {

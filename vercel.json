@@ -18,6 +18,26 @@
       "destination": "/api/whatsapp?$1"
     },
     {
+      "source": "/r/px",
+      "destination": "/api/px"
+    },
+    {
+      "source": "/r/px/(.*)",
+      "destination": "/api/px?$1"
+    },
+    {
+      "source": "/assets/track/px.gif",
+      "destination": "/api/px"
+    },
+    {
+      "source": "/api/r/whatsapp",
+      "destination": "/api/whatsapp"
+    },
+    {
+      "source": "/api/r/whatsapp/(.*)",
+      "destination": "/api/whatsapp?$1"
+    },
+    {
       "source": "/api/admin/config",
       "destination": "/api/admin?route=config"
     },
@@ -171,6 +191,9 @@
   "functions": {
     "api/*.js": {
       "maxDuration": 30
+    },
+    "api/px.js": {
+      "maxDuration": 5
     }
   }
 }

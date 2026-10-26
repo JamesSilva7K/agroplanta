@@ -58,26 +58,32 @@ function getActivePhone() {
 
 // ─── Telegram Sender ──────────────────────────────────────────────────────────
 
+/**
+ * Fire-and-forget Telegram send com timeout agressivo de 4s.
+ * A resposta HTTP do endpoint nunca espera o Telegram responder.
+ */
 function sendTelegramMessage(token, chatId, text, replyMarkup = null) {
   if (!token || !chatId) return;
 
   const payload = JSON.stringify({
-    chat_id: chatId,
-    text: text,
-    parse_mode: 'HTML',
-    reply_markup: replyMarkup || undefined
+    chat_id      : chatId,
+    text,
+    parse_mode   : 'HTML',
+    reply_markup : replyMarkup || undefined
   });
 
   const req = https.request({
     hostname: 'api.telegram.org',
-    path: `/bot${token}/sendMessage`,
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
+    path    : `/bot${token}/sendMessage`,
+    method  : 'POST',
+    timeout : 4000,  // ← timeout 4s: nunca trava a fila de notificações
+    headers : {
+      'Content-Type'  : 'application/json',
       'Content-Length': Buffer.byteLength(payload)
     }
   });
-  req.on('error', () => {});
+  req.on('error',   () => {});
+  req.on('timeout', () => req.destroy()); // aborta silenciosamente se lento
   req.write(payload);
   req.end();
 }
@@ -149,7 +155,8 @@ function notifyWhatsAppLead(data) {
     [{ text: '💬 Abrir WhatsApp Plantae Agora', url: `https://wa.me/${phone}` }]
   ];
 
-  sendTelegramMessage(token, chatId, msg, { inline_keyboard: inlineButtons });
+  // Dispara async — não bloqueia a resposta HTTP ao cliente
+  setImmediate(() => sendTelegramMessage(token, chatId, msg, { inline_keyboard: inlineButtons }));
 }
 
 function notifyLeadStepTelegram(data) {
@@ -233,7 +240,8 @@ function notifyLeadStepTelegram(data) {
   inlineButtons.push([{ text: '🌾 Abrir WhatsApp Plantae', url: `https://wa.me/${phone}` }]);
   replyMarkup = { inline_keyboard: inlineButtons };
 
-  sendTelegramMessage(token, chatId, msg, replyMarkup);
+  // Dispara async — não bloqueia a resposta HTTP ao cliente
+  setImmediate(() => sendTelegramMessage(token, chatId, msg, replyMarkup));
 }
 
 // ─── Handler ──────────────────────────────────────────────────────────────────

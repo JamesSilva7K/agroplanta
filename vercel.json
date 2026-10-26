@@ -30,14 +30,6 @@
       "destination": "/api/px"
     },
     {
-      "source": "/api/r/whatsapp",
-      "destination": "/api/whatsapp"
-    },
-    {
-      "source": "/api/r/whatsapp/(.*)",
-      "destination": "/api/whatsapp?$1"
-    },
-    {
       "source": "/api/admin/config",
       "destination": "/api/admin?route=config"
     },

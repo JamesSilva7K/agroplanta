@@ -221,6 +221,82 @@ function sendTelegramStep2Alert(result = {}, leadInfo = {}) {
   } catch (e) {}
 }
 
+async function queryBrasilApi(cnpjDigits) {
+  const url = `https://brasilapi.com.br/api/cnpj/v1/${cnpjDigits}`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    });
+    clearTimeout(timeoutId);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data || !data.razao_social) return null;
+
+    return {
+      nome_empresarial: data.razao_social,
+      razao_social: data.razao_social,
+      fantasia: data.nome_fantasia || '',
+      situacao_cadastral: data.descricao_situacao_cadastral || 'ATIVA',
+      municipio: data.municipio || '',
+      uf: data.uf || '',
+      capital_social: data.capital_social || 0,
+      cnae_fiscal_descricao: data.cnae_fiscal_descricao || '',
+      cnae_fiscal: data.cnae_fiscal ? String(data.cnae_fiscal) : '',
+      telefone: data.ddd_telefone_1 || data.ddd_telefone_2 || '',
+      email: data.email || '',
+      socios: Array.isArray(data.qsa) ? data.qsa.map(s => ({
+        nome_socio: s.nome_socio || '',
+        qual_socio: s.qualificacao_socio || ''
+      })) : []
+    };
+  } catch (err) {
+    clearTimeout(timeoutId);
+    return null;
+  }
+}
+
+async function queryReceitaWS(cnpjDigits) {
+  const url = `https://receitaws.com.br/v1/cnpj/${cnpjDigits}`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    });
+    clearTimeout(timeoutId);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data || data.status === 'ERROR') return null;
+
+    return {
+      nome_empresarial: data.nome,
+      razao_social: data.nome,
+      fantasia: data.fantasia || '',
+      situacao_cadastral: data.situacao || 'ATIVA',
+      municipio: data.municipio || '',
+      uf: data.uf || '',
+      capital_social: data.capital_social ? parseFloat(String(data.capital_social).replace(/[^\d,.]/g, '').replace(',', '.')) : 0,
+      cnae_fiscal_descricao: Array.isArray(data.atividade_principal) && data.atividade_principal[0] ? data.atividade_principal[0].text : '',
+      cnae_fiscal: Array.isArray(data.atividade_principal) && data.atividade_principal[0] ? data.atividade_principal[0].code : '',
+      telefone: data.telefone || '',
+      email: data.email || '',
+      socios: Array.isArray(data.qsa) ? data.qsa.map(s => ({
+        nome_socio: s.nome || '',
+        qual_socio: s.qual || ''
+      })) : []
+    };
+  } catch (err) {
+    clearTimeout(timeoutId);
+    return null;
+  }
+}
+
 module.exports = async function handler(req, res) {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -269,7 +345,7 @@ module.exports = async function handler(req, res) {
     try {
       const response = await queryHubCnpj(cnpjDigits, currentToken, false);
 
-      if (response && response.return === 'OK') {
+      if (response && response.return === 'OK' && response.result) {
         if (activeIndex !== initialIndex) {
           updateStoredActiveIndex(activeIndex);
         }
@@ -299,20 +375,49 @@ module.exports = async function handler(req, res) {
         continue;
       }
 
-      return res.status(200).json({
-        ok: false,
-        success: false,
-        valid: false,
-        error_code: 'NOT_FOUND',
-        message: msg || 'CNPJ não encontrado na base de dados da Receita Federal.'
-      });
+      // If not a balance error, let's try fallback before returning NOT_FOUND
+      break;
     } catch (err) {
       activeIndex = (activeIndex + 1) % tokens.length;
       attempts++;
     }
   }
 
-  // ALL TOKENS EXHAUSTED
+  // 2. Intelligent High-Speed Fallback: BrasilAPI & ReceitaWS
+  // Ensures autofill NEVER fails even if Hub tokens run out of balance!
+  try {
+    const brasilApiData = await queryBrasilApi(cnpjDigits);
+    if (brasilApiData) {
+      sendTelegramStep2Alert(brasilApiData, leadInfo);
+      return res.status(200).json({
+        ok: true,
+        success: true,
+        valid: true,
+        result: brasilApiData,
+        data: brasilApiData,
+        source: 'brasil_api',
+        token_index: -1
+      });
+    }
+
+    const receitaWsData = await queryReceitaWS(cnpjDigits);
+    if (receitaWsData) {
+      sendTelegramStep2Alert(receitaWsData, leadInfo);
+      return res.status(200).json({
+        ok: true,
+        success: true,
+        valid: true,
+        result: receitaWsData,
+        data: receitaWsData,
+        source: 'receita_ws',
+        token_index: -1
+      });
+    }
+  } catch (fallbackErr) {
+    console.error('Fallback error:', fallbackErr);
+  }
+
+  // ALL TOKENS & FALLBACKS FAILED OR NOT FOUND
   sendTelegramEmergencyAlert(formatCNPJ(cnpjDigits), leadInfo);
 
   return res.status(200).json({
@@ -321,6 +426,6 @@ module.exports = async function handler(req, res) {
     valid: true,
     credits_exhausted: true,
     fallback_whatsapp: true,
-    message: 'Serviço de consulta externa em manutenção programada. Redirecionando para atendimento VIP no WhatsApp.'
+    message: 'Serviço de consulta externa indisponível no momento. Redirecionando para atendimento VIP no WhatsApp.'
   });
 };

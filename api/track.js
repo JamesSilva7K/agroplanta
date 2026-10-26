@@ -159,6 +159,84 @@ function notifyWhatsAppLead(data) {
   setImmediate(() => sendTelegramMessage(token, chatId, msg, { inline_keyboard: inlineButtons }));
 }
 
+// ─── Throttle por sessão (evita spam de entrada/saída em recarregamentos) ──────
+const recentSessions = new Map(); // sessionId → { inputTs, exitTs }
+const THROTTLE_MS = 30_000; // 30s mínimo entre eventos do mesmo tipo por sessão
+
+function canNotify(sessionId, type) {
+  if (!sessionId) return true;
+  const now = Date.now();
+  const rec = recentSessions.get(sessionId) || {};
+  const last = rec[type] || 0;
+  if (now - last < THROTTLE_MS) return false;
+  rec[type] = now;
+  recentSessions.set(sessionId, rec);
+  // Limpa entradas antigas (>10min)
+  if (recentSessions.size > 500) {
+    for (const [sid, r] of recentSessions.entries()) {
+      if (now - Math.max(r.input || 0, r.exit || 0) > 600_000) recentSessions.delete(sid);
+    }
+  }
+  return true;
+}
+
+// ─── Notificação de Entrada no Site ───────────────────────────────────────────
+function notifyPageInput(data) {
+  const { token, chatId } = getTelegramConfig();
+  if (!token || !chatId) return;
+  if (!canNotify(data.session_id, 'input')) return;
+
+  const hora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+  const utmLine = data.utm_source
+    ? `\n📡 <b>Origem:</b> <code>${data.utm_source}${data.utm_campaign ? ' / ' + data.utm_campaign : ''}</code>`
+    : '';
+  const refLine = data.referrer && data.referrer !== ''
+    ? `\n🔗 <b>Referência:</b> <code>${String(data.referrer).substring(0, 80)}</code>`
+    : '';
+  const sessionLine = data.session_id
+    ? `\n🔑 <b>Sessão:</b> <code>${data.session_id}</code>`
+    : '';
+
+  const msg =
+    `👀 <b>NOVO VISITANTE — ENTRADA NO SITE</b>\n` +
+    `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+    `📱 <b>Dispositivo:</b> <code>${data.device || 'Desktop'}</code>\n` +
+    `🖥️ <b>Sistema:</b> <code>${data.os || 'N/A'}</code>` +
+    utmLine + refLine + sessionLine + `\n` +
+    `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+    `⏰ <b>Horário:</b> ${hora}`;
+
+  setImmediate(() => sendTelegramMessage(token, chatId, msg));
+}
+
+// ─── Notificação de Saída do Site ─────────────────────────────────────────────
+function notifyPageExit(data) {
+  const { token, chatId } = getTelegramConfig();
+  if (!token || !chatId) return;
+  if (!canNotify(data.session_id, 'exit')) return;
+
+  const hora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+  const utmLine = data.utm_source
+    ? `\n📡 <b>Origem:</b> <code>${data.utm_source}${data.utm_campaign ? ' / ' + data.utm_campaign : ''}</code>`
+    : '';
+  const sessionLine = data.session_id
+    ? `\n🔑 <b>Sessão:</b> <code>${data.session_id}</code>`
+    : '';
+
+  const msg =
+    `🚪 <b>VISITANTE SAIU DO SITE</b>\n` +
+    `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+    `⏱️ <b>Tempo no Site:</b> <code>${formatDuration(data.duration_seconds || 0)}</code>\n` +
+    `📱 <b>Dispositivo:</b> <code>${data.device || 'Desktop'}</code>` +
+    utmLine + sessionLine + `\n` +
+    `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+    `⏰ <b>Horário:</b> ${hora}`;
+
+  setImmediate(() => sendTelegramMessage(token, chatId, msg));
+}
+
 function notifyLeadStepTelegram(data) {
   const { token, chatId } = getTelegramConfig();
   if (!token || !chatId) return;
@@ -281,9 +359,13 @@ module.exports = function handler(req, res) {
     const eventType = data.type || data.event || 'unknown';
     saveEvent(data);
 
-    // Notify Telegram only for WhatsApp conversions (output_whatsapp)
+    // Notificações Telegram por tipo de evento
     if (eventType === 'output_whatsapp') {
       notifyWhatsAppLead(data);
+    } else if (eventType === 'input' || eventType === 'page_view') {
+      notifyPageInput(data);
+    } else if (eventType === 'exit') {
+      notifyPageExit(data);
     }
 
     return res.status(200).json({

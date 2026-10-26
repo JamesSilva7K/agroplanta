@@ -45,15 +45,29 @@ function getBotConfig() {
   let adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID || '';
   let defaultWhatsApp = process.env.DEFAULT_WHATSAPP_NUMBER || '5518981115624';
 
+  // Primary: data/config.json (canonical write target in production)
   try {
-    const configPath = path.join(process.cwd(), 'api', 'config.json');
-    if (fs.existsSync(configPath)) {
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const dataPath = path.join(process.cwd(), 'data', 'config.json');
+    if (fs.existsSync(dataPath)) {
+      const config = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
       token = config.telegram_bot_token || token;
       adminChatId = config.telegram_admin_id || adminChatId;
       defaultWhatsApp = config.whatsapp_number || defaultWhatsApp;
     }
   } catch (e) {}
+
+  // Fallback: api/config.json (local dev)
+  if (!token || !adminChatId) {
+    try {
+      const configPath = path.join(process.cwd(), 'api', 'config.json');
+      if (fs.existsSync(configPath)) {
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        token = config.telegram_bot_token || token;
+        adminChatId = config.telegram_admin_id || adminChatId;
+        defaultWhatsApp = config.whatsapp_number || defaultWhatsApp;
+      }
+    } catch (e) {}
+  }
 
   return { token, adminChatId, defaultWhatsApp };
 }

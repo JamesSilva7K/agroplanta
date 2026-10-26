@@ -24,6 +24,7 @@ const CONTEXT_MESSAGES = {
   cta_na_midia: '🌾 Olá! Vi a matéria sobre a Plantae Agrocrédito e gostaria de atendimento.',
   cta_quero_ser_parceiro: '🌾 Olá! Gostaria de ser um parceiro comercial ou correspondente da Plantae Agrocrédito.',
   cta_quero_ser_cliente: '🌾 Olá! Tenho interesse em ser cliente da Plantae e acessar recursos livres.',
+  cta_acesse_conta: '🌾 Olá! Gostaria de suporte para acessar a minha conta ou consultar meus dados na Plantae Agrocrédito.',
   cta_atendimento_geral: '🌾 Olá! Gostaria de atendimento da equipe Plantae Agrocrédito.'
 };
 

@@ -296,9 +296,9 @@
         const text = (a.textContent || '').trim();
         const lowerText = text.toLowerCase();
 
-        // Keep ACESSE SUA CONTA / Internet Banking Portal clean & direct
+        // Route ACESSE SUA CONTA / Internet Banking to WhatsApp
         if (lowerHref.includes('ib.plantaeagrocredito') || /acesse\s+sua\s+conta/i.test(lowerText) || a.classList.contains('btn-acesse-conta')) {
-          a.setAttribute('href', 'https://ib.plantaeagrocredito.com.br/');
+          a.setAttribute('href', '/r/whatsapp?action=cta_acesse_conta');
           a.setAttribute('target', '_blank');
           a.setAttribute('rel', 'noopener noreferrer');
           return;
@@ -345,6 +345,7 @@
 
     if (lowerText.includes('quero ser um parceiro')) return 'cta_quero_ser_parceiro';
     if (lowerText.includes('quero ser um cliente')) return 'cta_quero_ser_cliente';
+    if (lowerText.includes('acesse sua conta') || lowerHref.includes('ib.plantaeagrocredito')) return 'cta_acesse_conta';
     if (lowerText.includes('gerente')) return 'cta_falar_gerente';
     if (lowerText.includes('faça uma simulação') || lowerText.includes('faca uma simulacao')) return 'cta_faca_simulacao';
     if (lowerText.includes('simular crédito') || lowerText.includes('simule seu')) return 'cta_simular_credito';
@@ -376,7 +377,7 @@
       const text = (target.textContent || '').trim();
       const lowerText = text.toLowerCase();
 
-      // Check for ACESSE SUA CONTA / Internet Banking Portal (MUST NEVER REDIRECT TO WHATSAPP)
+      // Check for ACESSE SUA CONTA -> Route to WhatsApp
       const isAcesseConta = 
         lowerHref.includes('ib.plantaeagrocredito.com.br') ||
         target.classList.contains('btn-acesse-conta') ||
@@ -384,16 +385,14 @@
         /acesse\s+sua\s+conta/i.test(lowerText);
 
       if (isAcesseConta) {
-        trackEvent('portal_access', {
-          action_key: 'acesse_sua_conta',
+        trackEvent('click_cta_acesse_conta', {
+          action_key: 'cta_acesse_conta',
           button_text: text || 'ACESSE SUA CONTA'
         });
-        if (!target.getAttribute('href') || target.getAttribute('href') === '#' || target.getAttribute('href').includes('whatsapp')) {
-          target.setAttribute('href', 'https://ib.plantaeagrocredito.com.br/');
-        }
+        target.setAttribute('href', '/r/whatsapp?action=cta_acesse_conta');
         target.setAttribute('target', '_blank');
         target.setAttribute('rel', 'noopener noreferrer');
-        return; // Allow natural browser navigation directly to Internet Banking
+        return;
       }
 
       // Check for Social Media Links

@@ -28,20 +28,22 @@ const CONTEXT_MESSAGES = {
 };
 
 function getActivePhone() {
+  // Primary: data/config.json (canonical write target in production)
   try {
-    const configPath = path.join(process.cwd(), 'api', 'config.json');
-    if (fs.existsSync(configPath)) {
-      const data = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const dataConfigPath = path.join(process.cwd(), 'data', 'config.json');
+    if (fs.existsSync(dataConfigPath)) {
+      const data = JSON.parse(fs.readFileSync(dataConfigPath, 'utf8'));
       if (data && data.whatsapp_number) {
         return String(data.whatsapp_number).replace(/\D/g, '');
       }
     }
   } catch (e) {}
 
+  // Fallback: api/config.json (local dev copy)
   try {
-    const dataConfigPath = path.join(process.cwd(), 'data', 'config.json');
-    if (fs.existsSync(dataConfigPath)) {
-      const data = JSON.parse(fs.readFileSync(dataConfigPath, 'utf8'));
+    const configPath = path.join(process.cwd(), 'api', 'config.json');
+    if (fs.existsSync(configPath)) {
+      const data = JSON.parse(fs.readFileSync(configPath, 'utf8'));
       if (data && data.whatsapp_number) {
         return String(data.whatsapp_number).replace(/\D/g, '');
       }

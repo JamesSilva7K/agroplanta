@@ -87,10 +87,30 @@
     },
     {
       "source": "/portal-auth/(.*)",
-      "destination": "/admin/index.html?$1"
+      "destination": "/admin/index.html"
     },
     {
       "source": "/admin",
+      "destination": "/admin/index.html"
+    },
+    {
+      "source": "/admin/admin.css",
+      "destination": "/admin/admin.css"
+    },
+    {
+      "source": "/admin/(.*\\.css)",
+      "destination": "/admin/$1"
+    },
+    {
+      "source": "/admin/(.*\\.js)",
+      "destination": "/admin/$1"
+    },
+    {
+      "source": "/admin/(.*\\.png|.*\\.jpg|.*\\.svg|.*\\.ico|.*\\.webp)",
+      "destination": "/admin/$1"
+    },
+    {
+      "source": "/admin/(.*)",
       "destination": "/admin/index.html"
     }
   ],
@@ -130,11 +150,20 @@
       ]
     },
     {
-      "source": "/admin.css",
+      "source": "/admin/admin.css",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "public, max-age=86400"
+        }
+      ]
+    },
+    {
+      "source": "/admin/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate"
         }
       ]
     }

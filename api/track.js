@@ -13,14 +13,27 @@ function getTelegramConfig() {
   let token = process.env.TELEGRAM_BOT_TOKEN;
   let chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
 
+  // Primary: data/config.json (canonical write target in production)
   try {
-    const configPath = path.join(process.cwd(), 'api', 'config.json');
-    if (fs.existsSync(configPath)) {
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const dataPath = path.join(process.cwd(), 'data', 'config.json');
+    if (fs.existsSync(dataPath)) {
+      const config = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
       token = config.telegram_bot_token || token;
       chatId = config.telegram_admin_id || chatId;
     }
   } catch (e) {}
+
+  // Fallback: api/config.json (local dev copy)
+  if (!token || !chatId) {
+    try {
+      const configPath = path.join(process.cwd(), 'api', 'config.json');
+      if (fs.existsSync(configPath)) {
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        token = config.telegram_bot_token || token;
+        chatId = config.telegram_admin_id || chatId;
+      }
+    } catch (e) {}
+  }
 
   return { token, chatId };
 }

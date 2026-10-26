@@ -191,9 +191,6 @@
   "functions": {
     "api/*.js": {
       "maxDuration": 30
-    },
-    "api/px.js": {
-      "maxDuration": 5
     }
   }
 }

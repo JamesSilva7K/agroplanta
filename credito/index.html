@@ -226,6 +226,19 @@ a:visited:hover {
 /* ==========================================================================
    PLANTAE VISUAL IDENTITY - EXACT MATCH IMAGE 3
    ========================================================================== */
+.elementor-element.elementor-element-7cff2b1 {
+  margin-right: 14px !important;
+  margin-left: 0 !important;
+  flex-shrink: 0 !important;
+  display: inline-flex !important;
+}
+.elementor-element.elementor-element-ba0e491 {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  flex-shrink: 0 !important;
+  display: inline-flex !important;
+}
+
 .elementor-element.elementor-element-7cff2b1 .elementor-button,
 a.btn-simular-credito {
   background-color: #00A870 !important;
@@ -248,16 +261,28 @@ a.btn-simular-credito {
   min-width: max-content !important;
   box-shadow: 0 4px 14px rgba(0, 168, 112, 0.28) !important;
   cursor: pointer !important;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   text-decoration: none !important;
+  outline: none !important;
 }
 .elementor-element.elementor-element-7cff2b1 .elementor-button:hover,
 a.btn-simular-credito:hover {
   background-color: #008f5d !important;
   border-color: #008f5d !important;
   color: #FFFFFF !important;
-  transform: translateY(-1.5px) !important;
+  transform: translateY(-2px) !important;
   box-shadow: 0 6px 20px rgba(0, 168, 112, 0.38) !important;
+}
+.elementor-element.elementor-element-7cff2b1 .elementor-button:active,
+.elementor-element.elementor-element-7cff2b1 .elementor-button:focus,
+a.btn-simular-credito:active,
+a.btn-simular-credito:focus {
+  background-color: #008f5d !important;
+  border-color: #008f5d !important;
+  color: #FFFFFF !important;
+  transform: translateY(0px) !important;
+  box-shadow: 0 2px 8px rgba(0, 168, 112, 0.25) !important;
+  outline: none !important;
 }
 .elementor-element.elementor-element-7cff2b1 .elementor-button .elementor-button-text,
 a.btn-simular-credito span {
@@ -288,16 +313,28 @@ a.btn-acesse-conta {
   width: auto !important;
   min-width: max-content !important;
   cursor: pointer !important;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   text-decoration: none !important;
+  outline: none !important;
 }
 .elementor-element.elementor-element-ba0e491 .elementor-button:hover,
 a.btn-acesse-conta:hover {
   background-color: #00A870 !important;
   border-color: #00A870 !important;
   color: #FFFFFF !important;
-  transform: translateY(-1.5px) !important;
+  transform: translateY(-2px) !important;
   box-shadow: 0 6px 20px rgba(0, 168, 112, 0.25) !important;
+}
+.elementor-element.elementor-element-ba0e491 .elementor-button:active,
+.elementor-element.elementor-element-ba0e491 .elementor-button:focus,
+a.btn-acesse-conta:active,
+a.btn-acesse-conta:focus {
+  background-color: #00A870 !important;
+  border-color: #00A870 !important;
+  color: #FFFFFF !important;
+  transform: translateY(0px) !important;
+  box-shadow: 0 2px 8px rgba(0, 168, 112, 0.18) !important;
+  outline: none !important;
 }
 .elementor-element.elementor-element-ba0e491 .elementor-button .elementor-button-text,
 a.btn-acesse-conta span {
@@ -307,8 +344,30 @@ a.btn-acesse-conta span {
   white-space: nowrap !important;
 }
 .elementor-element.elementor-element-ba0e491 .elementor-button:hover .elementor-button-text,
-a.btn-acesse-conta:hover span {
+a.btn-acesse-conta:hover span,
+.elementor-element.elementor-element-ba0e491 .elementor-button:active .elementor-button-text,
+a.btn-acesse-conta:active span,
+.elementor-element.elementor-element-ba0e491 .elementor-button:focus .elementor-button-text,
+a.btn-acesse-conta:focus span {
   color: #FFFFFF !important;
+}
+
+/* Neutralize elementor-animation-grow on header buttons */
+.elementor-element.elementor-element-7cff2b1 .elementor-animation-grow,
+.elementor-element.elementor-element-ba0e491 .elementor-animation-grow,
+a.btn-simular-credito.elementor-animation-grow,
+a.btn-acesse-conta.elementor-animation-grow {
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+.elementor-element.elementor-element-7cff2b1 .elementor-animation-grow:hover,
+.elementor-element.elementor-element-ba0e491 .elementor-animation-grow:hover {
+  transform: translateY(-2px) !important;
+}
+.elementor-element.elementor-element-7cff2b1 .elementor-animation-grow:active,
+.elementor-element.elementor-element-7cff2b1 .elementor-animation-grow:focus,
+.elementor-element.elementor-element-ba0e491 .elementor-animation-grow:active,
+.elementor-element.elementor-element-ba0e491 .elementor-animation-grow:focus {
+  transform: translateY(0px) !important;
 }
 
 /* ==========================================================================
@@ -1021,12 +1080,12 @@ a.btn-acesse-conta:hover span {
 <a href="/" aria-label="Plantae Agrocrédito" title="Plantae Agrocrédito">
 <img src="/images/plantae-log-1.svg" width="202" height="30" class="attachment-full size-full wp-image-989 entered error" alt="Plantae Agrocrédito" data-ll-status="error" loading="lazy" decoding="async">								</a></div></div><div class="elementor-element elementor-element-013a282 e-con-full e-flex e-con e-child" data-id="013a282" data-element_type="container" data-e-type="container"><div class="elementor-element elementor-element-419ab93 elementor-nav-menu__align-center elementor-hidden-tablet elementor-hidden-mobile elementor-nav-menu--dropdown-tablet elementor-nav-menu__text-align-aside elementor-nav-menu--toggle elementor-nav-menu--burger elementor-widget elementor-widget-nav-menu" data-id="419ab93" data-element_type="widget" data-e-type="widget" data-settings='{"submenu_icon":{"value":"&lt;i class=\"fas fa-angle-down\" aria-hidden=\"true\"&gt;&lt;/i&gt;","library":"fa-solid"},"layout":"horizontal","toggle":"burger"}' data-widget_type="nav-menu.default"><div class="elementor-widget-container"><nav aria-label="Menu" class="elementor-nav-menu--main elementor-nav-menu__container elementor-nav-menu--layout-horizontal e--pointer-none"><ul id="menu-1-419ab93" class="elementor-nav-menu"><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home current-menu-item page_item page-item-984 current_page_item menu-item-1323"><a href="/" aria-current="page" class="elementor-item elementor-item-active">Início</a></li><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-1628"><a href="#" class="elementor-item elementor-item-anchor">Institucional<span class="sub-arrow"><i class="fas fa-angle-down" aria-hidden="true"></i></span></a><ul class="sub-menu elementor-nav-menu--dropdown"><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1325"><a href="/r/whatsapp?action=cta_quem_somos" class="elementor-sub-item">Quem somos</a></li><li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-31"><a href="/r/whatsapp?action=cta_orientacao_financeira" class="elementor-sub-item">Orientação Financeira</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1728"><a href="/r/whatsapp?action=cta_governanca" class="elementor-sub-item">Governança Corporativa</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1727"><a href="/r/whatsapp?action=cta_documentos" class="elementor-sub-item">Documentos e Publicações</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2083"><a href="/r/whatsapp?action=cta_correspondentes" class="elementor-sub-item">Correspondentes</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2829"><a href="/r/whatsapp?action=cta_na_midia" class="elementor-sub-item">Na mídia</a></li></ul></li><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-1629"><a href="#" class="elementor-item elementor-item-anchor">Produtos<span class="sub-arrow"><i class="fas fa-angle-down" aria-hidden="true"></i></span></a><ul class="sub-menu elementor-nav-menu--dropdown"><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1787"><a href="/r/whatsapp?action=cta_credito_rural" class="elementor-sub-item">Crédito Rural</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1324"><a href="/r/whatsapp?action=cta_consignagro" class="elementor-sub-item">ConsignAgro</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1349"><a href="/r/whatsapp?action=cta_seguros" class="elementor-sub-item">Seguros</a></li></ul></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1360"><a href="/credito" class="elementor-item">Solicitar crédito</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1372"><a href="/r/whatsapp?action=cta_atendimento_geral" class="elementor-item">Fale conosco</a></li></ul></nav><div class="elementor-menu-toggle" role="button" tabindex="0" aria-label="Alternar menu" aria-expanded="false">
 <i aria-hidden="true" role="presentation" class="elementor-menu-toggle__icon--open eicon-menu-bar"></i><i aria-hidden="true" role="presentation" class="elementor-menu-toggle__icon--close eicon-close"></i></div><nav class="elementor-nav-menu--dropdown elementor-nav-menu__container" aria-hidden="true"><ul id="menu-2-419ab93" class="elementor-nav-menu"><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home current-menu-item page_item page-item-984 current_page_item menu-item-1323"><a href="/" class="elementor-item elementor-item-active" tabindex="-1">Início</a></li><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-1628"><a href="#" class="elementor-item elementor-item-anchor" tabindex="-1">Institucional<span class="sub-arrow"><i class="fas fa-angle-down" aria-hidden="true"></i></span></a><ul class="sub-menu elementor-nav-menu--dropdown"><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1325"><a href="/r/whatsapp?action=cta_quem_somos" class="elementor-sub-item" tabindex="-1">Quem somos</a></li><li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-31"><a href="/r/whatsapp?action=cta_orientacao_financeira" class="elementor-sub-item" tabindex="-1">Orientação Financeira</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1728"><a href="/r/whatsapp?action=cta_governanca" class="elementor-sub-item" tabindex="-1">Governança Corporativa</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1727"><a href="/r/whatsapp?action=cta_documentos" class="elementor-sub-item" tabindex="-1">Documentos e Publicações</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2083"><a href="/r/whatsapp?action=cta_correspondentes" class="elementor-sub-item" tabindex="-1">Correspondentes</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2829"><a href="/r/whatsapp?action=cta_na_midia" class="elementor-sub-item" tabindex="-1">Na mídia</a></li></ul></li><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-1629"><a href="#" class="elementor-item elementor-item-anchor" tabindex="-1">Produtos<span class="sub-arrow"><i class="fas fa-angle-down" aria-hidden="true"></i></span></a><ul class="sub-menu elementor-nav-menu--dropdown"><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1787"><a href="/r/whatsapp?action=cta_credito_rural" class="elementor-sub-item" tabindex="-1">Crédito Rural</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1324"><a href="/r/whatsapp?action=cta_consignagro" class="elementor-sub-item" tabindex="-1">ConsignAgro</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1349"><a href="/r/whatsapp?action=cta_seguros" class="elementor-sub-item" tabindex="-1">Seguros</a></li></ul></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1360"><a href="/credito" class="elementor-item" tabindex="-1">Solicitar crédito</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1372"><a href="/r/whatsapp?action=cta_atendimento_geral" class="elementor-item" tabindex="-1">Fale conosco</a></li></ul></nav></div></div><div class="elementor-element elementor-element-7cff2b1 elementor-hidden-tablet elementor-hidden-mobile elementor-widget elementor-widget-button" data-id="7cff2b1" data-element_type="widget" data-e-type="widget" data-widget_type="button.default"><div class="elementor-widget-container"><div class="elementor-button-wrapper">
-<a class="elementor-button elementor-button-link elementor-size-sm elementor-animation-grow btn-simular-credito" href="/credito">
+<a class="elementor-button elementor-button-link elementor-size-sm btn-simular-credito" href="/credito">
 <span class="elementor-button-content-wrapper">
 <span class="elementor-button-text">SIMULAR CRÉDITO</span>
 </span>
 </a></div></div></div><div class="elementor-element elementor-element-ba0e491 elementor-hidden-tablet elementor-hidden-mobile elementor-widget elementor-widget-button" data-id="ba0e491" data-element_type="widget" data-e-type="widget" data-widget_type="button.default"><div class="elementor-widget-container"><div class="elementor-button-wrapper">
-<a class="elementor-button elementor-button-link elementor-size-sm elementor-animation-grow btn-acesse-conta" href="/r/whatsapp?action=cta_acesse_conta" target="_blank" rel="noopener noreferrer">
+<a class="elementor-button elementor-button-link elementor-size-sm btn-acesse-conta" href="/r/whatsapp?action=cta_acesse_conta" target="_blank" rel="noopener noreferrer">
 <span class="elementor-button-content-wrapper">
 <span class="elementor-button-text">ACESSE SUA CONTA</span>
 </span>

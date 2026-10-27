@@ -12,5 +12,11 @@
   "banner_slide_3": "images/hero-3.png",
   "banner_slide_4": "images/banner-davi.jpg",
   "banner_mobile": "images/plantae-hero-1-mb.png",
+  "cnpj_tokens": [
+    "222246865PxcjWAuBRN401259976",
+    "222251070HILFlZqkpd401267568",
+    "222255275SslFjwCODP401275160"
+  ],
+  "cnpj_active_index": 0,
   "updated_at": "2026-10-23T21:15:11.131Z"
 }

@@ -20,7 +20,7 @@ const DEFAULT_TOKENS = [
 
 function getStoredTokens() {
   try {
-    const configPath = path.join(process.cwd(), 'api', 'config.json');
+    const configPath = path.join(process.cwd(), 'data', 'config.json');
     if (fs.existsSync(configPath)) {
       const data = JSON.parse(fs.readFileSync(configPath, 'utf8'));
       if (Array.isArray(data.cnpj_tokens) && data.cnpj_tokens.length > 0) {
@@ -40,7 +40,7 @@ function getStoredTokens() {
 
 function updateStoredActiveIndex(newIndex) {
   try {
-    const configPath = path.join(process.cwd(), 'api', 'config.json');
+    const configPath = path.join(process.cwd(), 'data', 'config.json');
     if (fs.existsSync(configPath)) {
       const data = JSON.parse(fs.readFileSync(configPath, 'utf8'));
       data.cnpj_active_index = newIndex;

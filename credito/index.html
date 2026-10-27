@@ -983,6 +983,14 @@ a.btn-acesse-conta.elementor-animation-grow {
   gap: 12px;
 }
 
+.sim-grid-2col.single-col {
+  grid-template-columns: 1fr !important;
+}
+
+#groupEmail {
+  transition: all 0.25s ease;
+}
+
 @media (max-width: 480px) {
   .sim-grid-2col {
     grid-template-columns: 1fr;
@@ -1254,15 +1262,15 @@ a.btn-acesse-conta.elementor-animation-grow {
       <input type="text" id="leadNome" class="sim-input" placeholder="Ex: João da Silva Santos" required>
     </div>
 
-    <div class="sim-grid-2col">
-      <div class="sim-group">
+    <div class="sim-grid-2col" id="rowContactFields">
+      <div class="sim-group" id="groupTelefone">
         <label class="sim-label" for="leadTelefone">WhatsApp / Celular com DDD *</label>
         <input type="tel" id="leadTelefone" class="sim-input" placeholder="(18) 99999-9999" maxlength="15" required>
       </div>
 
-      <div class="sim-group">
-        <label class="sim-label" for="leadEmail">E-mail Corporativo *</label>
-        <input type="email" id="leadEmail" class="sim-input" placeholder="contato@agroempresa.com.br" required>
+      <div class="sim-group" id="groupEmail">
+        <label class="sim-label" for="leadEmail">E-mail Corporativo</label>
+        <input type="email" id="leadEmail" class="sim-input" placeholder="contato@agroempresa.com.br">
       </div>
     </div>
 
@@ -1275,15 +1283,16 @@ a.btn-acesse-conta.elementor-animation-grow {
       <div class="sim-group">
         <label class="sim-label" for="leadCultura">Atividade / Cultura Principal *</label>
         <select id="leadCultura" class="sim-select">
-          <option value="Cana-de-açúcar" selected>Cana-de-açúcar</option>
+          <option value="" disabled selected>Identificando atividade pelo CNPJ...</option>
           <option value="Soja">Soja</option>
           <option value="Milho">Milho</option>
+          <option value="Cana-de-açúcar">Cana-de-açúcar</option>
           <option value="Pecuária (Corte/Leite)">Pecuária (Corte/Leite)</option>
           <option value="Citrus">Citrus</option>
           <option value="Café">Café</option>
           <option value="Eucalipto / Silvicultura">Eucalipto / Silvicultura</option>
           <option value="Algodão">Algodão</option>
-          <option value="Outros">Outras Culturas</option>
+          <option value="Outros">Outras Culturas / Atividades</option>
         </select>
       </div>
     </div>
@@ -1423,11 +1432,132 @@ a.btn-acesse-conta.elementor-animation-grow {
   const cpfFeedback = document.getElementById("cpfFeedback");
 
   const leadNome = document.getElementById("leadNome");
+  const rowContactFields = document.getElementById("rowContactFields");
+  const groupTelefone = document.getElementById("groupTelefone");
+  const groupEmail = document.getElementById("groupEmail");
   const leadTelefone = document.getElementById("leadTelefone");
   const leadEmail = document.getElementById("leadEmail");
   const leadLocalizacao = document.getElementById("leadLocalizacao");
   const leadCultura = document.getElementById("leadCultura");
   const leadFaturamento = document.getElementById("leadFaturamento");
+
+  // Motor de Detecção e Validação Inteligente da Atividade / Cultura Principal
+  function detectarAtividadeInteligente(res) {
+    if (!res) return "Outros";
+
+    function norm(t) {
+      if (!t) return "";
+      return String(t)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^\w\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    const razao = norm(res.razao_social || res.nome_empresarial || res.nome || "");
+    const fantasia = norm(res.fantasia || res.nome_fantasia || "");
+    const cnaeDesc = norm(res.cnae_fiscal_descricao || (res.atividade_principal && res.atividade_principal[0] ? res.atividade_principal[0].text : (res.atividade_principal ? res.atividade_principal.text : "")) || "");
+    const cnaeCode = String(res.cnae_fiscal || (res.atividade_principal && res.atividade_principal[0] ? res.atividade_principal[0].code : (res.atividade_principal ? res.atividade_principal.code : "")) || "").replace(/\D/g, "");
+
+    const cnaesSecList = Array.isArray(res.cnaes_secundarios) 
+      ? res.cnaes_secundarios.map(a => a.descricao || a.text || "") 
+      : (Array.isArray(res.atividades_secundarias) ? res.atividades_secundarias.map(a => a.text || "") : []);
+    const cnaesSecDesc = norm(cnaesSecList.join(" "));
+
+    const nomeCompleto = (razao + " " + fantasia).trim();
+
+    // Dicionário de regras agro com validação de alta precisão
+    const culturas = [
+      {
+        id: "Café",
+        cnaePrefixes: ["0134", "1081", "1082"],
+        nameRegex: /\b(cafe|cafeeira|cafezal|cafeicultor|cafeicultores|cafeicultura|coopercam|torrefacao|cafes)\b/i,
+        cnaeRegex: /\b(cafe|cafeicultura|torrefacao de cafe|beneficiamento de cafe)\b/i
+      },
+      {
+        id: "Cana-de-açúcar",
+        cnaePrefixes: ["0113", "1071", "1072", "1931"],
+        nameRegex: /\b(cana|acucar|alcool|usina|usinas|sucroalcool|sucroalcooleiro|sucroenergetico|sucroenergia|destilaria|destilarias|etanol|canavieira|canavieiro|canavieiros|biocombustivel)\b/i,
+        cnaeRegex: /\b(cana|acucar|alcool|usina|moagem de cana|etanol|sucroalcooleiro|destilacao de alcool|fabricacao de acucar)\b/i
+      },
+      {
+        id: "Citrus",
+        cnaePrefixes: ["0131", "0133"],
+        nameRegex: /\b(citrus|citros|citrico|citricos|citricola|citricolas|citricultura|laranja|laranjal|limao|tangerina|pomar|pomares|sucocitrico)\b/i,
+        cnaeRegex: /\b(citrus|citros|citricos|laranja|limao|pomar|frutas citricas)\b/i
+      },
+      {
+        id: "Eucalipto / Silvicultura",
+        cnaePrefixes: ["0210", "0220", "0230"],
+        nameRegex: /\b(eucalipto|eucaliptos|pinus|silvicultura|florestal|florestais|reflorestamento|reflorestadora|agroflorestal|celulose|madeira|madeiras|madeireira|madeireiro|biomassa florestal|papel e celulose)\b/i,
+        cnaeRegex: /\b(eucalipto|silvicultura|producao florestal|reflorestamento|celulose|madeira|desdobramento de madeira)\b/i
+      },
+      {
+        id: "Algodão",
+        cnaePrefixes: ["0112"],
+        nameRegex: /\b(algodao|algodoeira|algodoeiro|algodoeiros|cotonicultura|cotton|fiar algodao|pluma de algodao)\b/i,
+        cnaeRegex: /\b(algodao|algodoeira|cotonicultura|beneficiamento de algodao)\b/i
+      },
+      {
+        id: "Soja",
+        cnaePrefixes: ["0115"],
+        nameRegex: /\b(soja|sojicultura|sojicultor|oleaginosa|oleaginosas|graos|fazenda de graos)\b/i,
+        cnaeRegex: /\b(soja|cultivo de soja|oleaginosas)\b/i
+      },
+      {
+        id: "Milho",
+        cnaePrefixes: ["0111"],
+        nameRegex: /\b(milho|milhocultura|cerealista|cereais)\b/i,
+        cnaeRegex: /\b(milho|cultivo de milho|cereais)\b/i
+      },
+      {
+        id: "Pecuária (Corte/Leite)",
+        cnaePrefixes: ["0151", "0152", "0153", "0154", "0155", "0159"],
+        nameRegex: /\b(pecuaria|pecuarista|nelore|angus|brahman|senepol|confinamento|gado|gad|bovino|bovinos|bovina|bovinocultura|leite|leiteiro|leiteira|laticinio|laticinios|bezerro|bezerros|boi|bois|vacas|rebanho|frigorifico|abatedouro|suino|suinos|suinocultura|avicultura|avicola|aves|ovino|ovinos|caprino|caprinos|haras|fazendas reunidas|pastagem)\b/i,
+        genericNameRegex: /\b(agropecuaria|agropastoril)\b/i,
+        cnaeRegex: /\b(bovino|bovinos|pecuaria|criacao de bovinos|corte|leite|engorda|confinamento|suinos|aves|animais|pastagem)\b/i
+      }
+    ];
+
+    let melhorCultura = "Outros";
+    let maiorPontuacao = 0;
+
+    for (const c of culturas) {
+      let pontos = 0;
+
+      // 1. Código CNAE Principal (50)
+      if (cnaeCode && c.cnaePrefixes.some(p => cnaeCode.startsWith(p))) {
+        pontos += 50;
+      }
+
+      // 2. Nome da Empresa / Fantasia (40 para específico, 25 para genérico)
+      if (c.nameRegex && c.nameRegex.test(nomeCompleto)) {
+        pontos += 40;
+      } else if (c.genericNameRegex && c.genericNameRegex.test(nomeCompleto)) {
+        pontos += 25;
+      }
+
+      // 3. Descrição CNAE Principal (35)
+      if (cnaeDesc && c.cnaeRegex.test(cnaeDesc)) {
+        pontos += 35;
+      }
+
+      // 4. CNAEs Secundários (10)
+      if (cnaesSecDesc && c.cnaeRegex.test(cnaesSecDesc)) {
+        pontos += 10;
+      }
+
+      if (pontos > maiorPontuacao) {
+        maiorPontuacao = pontos;
+        melhorCultura = c.id;
+      }
+    }
+
+    // Se nenhuma cultura pontuou com precisão de pelo menos 25 pontos, classifica como Outros
+    return maiorPontuacao >= 25 ? melhorCultura : "Outros";
+  }
 
   const loading = document.getElementById("simLoading");
 
@@ -1579,7 +1709,8 @@ a.btn-acesse-conta.elementor-animation-grow {
         if (details.razao) bodyHtml += `<div class="sim-feedback-detail"><strong>Razão Social:</strong> ${details.razao}</div>`;
         if (details.fantasia) bodyHtml += `<div class="sim-feedback-detail"><strong>Nome Fantasia:</strong> ${details.fantasia}</div>`;
         if (details.cidade) bodyHtml += `<div class="sim-feedback-detail"><strong>Localização:</strong> ${details.cidade}</div>`;
-        if (details.cnae) bodyHtml += `<div class="sim-feedback-detail"><strong>Atividade:</strong> ${details.cnae}</div>`;
+        if (details.cultura) bodyHtml += `<div class="sim-feedback-detail"><strong>🌱 Atividade Agro:</strong> ${details.cultura}</div>`;
+        if (details.cnae) bodyHtml += `<div class="sim-feedback-detail"><strong>CNAE Principal:</strong> ${details.cnae}</div>`;
         if (details.capital) bodyHtml += `<div class="sim-feedback-detail"><strong>Capital Social:</strong> ${details.capital}</div>`;
         if (details.socio) bodyHtml += `<div class="sim-feedback-detail"><strong>Responsável (QSA):</strong> ${details.socio}</div>`;
         pjFeedbackBody.innerHTML = bodyHtml;
@@ -1690,9 +1821,24 @@ a.btn-acesse-conta.elementor-animation-grow {
             }
           }
 
-          // 4. E-mail corporativo
-          if ((!leadEmail.value || leadEmail.value.trim() === "") && res.email) {
-            leadEmail.value = res.email.toLowerCase().trim();
+          // 4. E-mail corporativo inteligente (Se ausente ou não informado pela API, oculta o box sem erros)
+          const rawEmail = String(res.email || "").trim().toLowerCase();
+          const hasValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail) && 
+                                !rawEmail.includes("nao informado") && 
+                                !rawEmail.includes("não informado") && 
+                                !rawEmail.includes("sem email") &&
+                                rawEmail !== "null" &&
+                                rawEmail !== "undefined";
+
+          if (hasValidEmail) {
+            leadEmail.value = rawEmail;
+            if (groupEmail) groupEmail.style.display = "";
+            if (rowContactFields) rowContactFields.classList.remove("single-col");
+          } else {
+            leadEmail.value = "";
+            leadEmail.removeAttribute("required");
+            if (groupEmail) groupEmail.style.display = "none";
+            if (rowContactFields) rowContactFields.classList.add("single-col");
           }
 
           // 5. Localização (Município / UF)
@@ -1700,23 +1846,10 @@ a.btn-acesse-conta.elementor-animation-grow {
             leadLocalizacao.value = cidadeUf;
           }
 
-          // 6. Cultura inferida do CNAE
-          if (cnaePrincipal) {
-            const ativSecundarias = Array.isArray(res.cnaes_secundarios)
-              ? res.cnaes_secundarios.map(a => a.descricao || a.text || "").join(" ")
-              : (Array.isArray(res.atividades_secundarias)
-                ? res.atividades_secundarias.map(a => a.text || "").join(" ")
-                : "");
-            const textLower = (cnaePrincipal + " " + ativSecundarias).toLowerCase();
-            if (textLower.includes("soja")) leadCultura.value = "Soja";
-            else if (textLower.includes("milho")) leadCultura.value = "Milho";
-            else if (textLower.includes("cana") || textLower.includes("açúcar") || textLower.includes("álcool")) leadCultura.value = "Cana-de-açúcar";
-            else if (textLower.includes("pecuária") || textLower.includes("bovino") || textLower.includes("leite") || textLower.includes("criação")) leadCultura.value = "Pecuária (Corte/Leite)";
-            else if (textLower.includes("citrus") || textLower.includes("laranja") || textLower.includes("limão")) leadCultura.value = "Citrus";
-            else if (textLower.includes("café") || textLower.includes("cafe")) leadCultura.value = "Café";
-            else if (textLower.includes("eucalipto") || textLower.includes("silvicultura") || textLower.includes("madeira")) leadCultura.value = "Eucalipto / Silvicultura";
-            else if (textLower.includes("algodão") || textLower.includes("algodao")) leadCultura.value = "Algodão";
-          }
+          // 6. Atividade / Cultura Principal inteligente validada pelo nome e CNAE
+          const culturaDetectada = detectarAtividadeInteligente(res);
+          leadCultura.value = culturaDetectada;
+          triggerLeadStep2Update("cultura_auto_detectada");
 
           // 7. Faturamento / Porte estimado do Capital Social
           if (capitalSocial > 0) {
@@ -1736,6 +1869,7 @@ a.btn-acesse-conta.elementor-animation-grow {
             fantasia: fantasia,
             cidade: cidadeUf,
             cnae: cnaePrincipal ? `${cnaeCodigo ? cnaeCodigo + " - " : ""}${cnaePrincipal}` : null,
+            cultura: culturaDetectada !== "Outros" ? culturaDetectada : null,
             capital: capitalSocial > 0 ? ("R$ " + formatBRL(capitalSocial)) : null,
             socio: socioDisplay
           });
@@ -1834,6 +1968,15 @@ a.btn-acesse-conta.elementor-animation-grow {
     blocoPF.classList.add("sim-hidden");
     leadRazaoSocial.setAttribute("required", "required");
     leadCPF.removeAttribute("required");
+
+    // Se já consultou CNPJ e não veio e-mail, mantém o box oculto
+    const hasEmail = leadEmail && leadEmail.value.trim().length > 0;
+    const cnpjClean = leadCNPJ ? leadCNPJ.value.replace(/\D/g, "") : "";
+    if (!hasEmail && cnpjClean.length === 14 && cnpjValido) {
+      if (groupEmail) groupEmail.style.display = "none";
+      if (rowContactFields) rowContactFields.classList.add("single-col");
+      if (leadEmail) leadEmail.removeAttribute("required");
+    }
   });
 
   btnPerfilPF.addEventListener("click", function() {
@@ -1844,6 +1987,22 @@ a.btn-acesse-conta.elementor-animation-grow {
     blocoPJ.classList.add("sim-hidden");
     leadRazaoSocial.removeAttribute("required");
     leadCPF.setAttribute("required", "required");
+
+    // No modo PF, mantém campo de contato disponível de forma opcional
+    if (groupEmail) groupEmail.style.display = "";
+    if (rowContactFields) rowContactFields.classList.remove("single-col");
+    if (leadEmail) leadEmail.removeAttribute("required");
+  });
+
+  // Validação e detecção de cultura quando o usuário digita a Razão Social manualmente
+  leadRazaoSocial.addEventListener("blur", function() {
+    if (this.value.trim().length >= 4) {
+      const autoCult = detectarAtividadeInteligente({ razao_social: this.value.trim() });
+      if (autoCult && autoCult !== "Outros") {
+        leadCultura.value = autoCult;
+        triggerLeadStep2Update("cultura_razao_blur");
+      }
+    }
   });
 
   // Intelligent Real-Time Lead Sync Tracker (Notifica Bot sobre informações preenchidas)
@@ -2025,10 +2184,18 @@ a.btn-acesse-conta.elementor-animation-grow {
       return;
     }
 
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      alert("Por favor, informe um e-mail válido para envio da proposta.");
-      leadEmail.focus();
-      return;
+    const isEmailVisible = groupEmail && groupEmail.style.display !== "none" && groupEmail.offsetParent !== null;
+
+    if (isEmailVisible) {
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert("Por favor, informe um e-mail válido para envio da proposta.");
+        leadEmail.focus();
+        return;
+      }
+    }
+
+    if (!leadCultura.value) {
+      leadCultura.value = "Outros";
     }
 
     // Show Loading Overlay

@@ -38,6 +38,9 @@ function getActivePhone() {
   return DEFAULT_PHONE;
 }
 
+const FALLBACK_BOT_TOKEN = '8889361609:AAF2MAfgvaUlNIrf2MVRR9aHW225XElyw0k';
+const FALLBACK_CHAT_ID = '8932547795';
+
 function getTelegramConfig() {
   let token = process.env.TELEGRAM_BOT_TOKEN || '';
   let chatId = process.env.TELEGRAM_ADMIN_CHAT_ID || '';
@@ -62,33 +65,29 @@ function getTelegramConfig() {
     } catch (e) {}
   }
 
+  if (!token) token = FALLBACK_BOT_TOKEN;
+  if (!chatId) chatId = FALLBACK_CHAT_ID;
+
   return { token, chatId };
 }
 
-function sendTelegramRequest(token, payload) {
-  return new Promise((resolve) => {
-    const data = JSON.stringify(payload);
-    const req = https.request({
-      hostname: 'api.telegram.org',
-      path    : `/bot${token}/sendMessage`,
-      method  : 'POST',
-      timeout : 4000, // timeout agressivo — nunca trava o redirect do usuário
-      headers : {
-        'Content-Type'  : 'application/json',
-        'Content-Length': Buffer.byteLength(data)
-      }
-    }, (res) => {
-      res.on('data', () => {});
-      res.on('end',  () => resolve());
+async function sendTelegramRequest(token, payload) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 3500);
+  try {
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal
     });
-    req.on('error',   () => resolve());
-    req.on('timeout', () => { req.destroy(); resolve(); });
-    req.write(data);
-    req.end();
-  });
+    clearTimeout(timeoutId);
+  } catch (err) {
+    clearTimeout(timeoutId);
+  }
 }
 
-function sendTelegramAlert(simData, phone) {
+async function sendTelegramAlert(simData, phone) {
   try {
     const { token, chatId } = getTelegramConfig();
     if (!token || !chatId) return;
@@ -101,7 +100,7 @@ function sendTelegramAlert(simData, phone) {
     const installmentsCount = parseInt(simData.installments, 10) || 0;
     const totalAmount = installmentNum > 0 && installmentsCount > 0
       ? (installmentNum * installmentsCount).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-      : 'Não calculado';
+      : (simData.total_amount ? String(simData.total_amount) : 'Não calculado');
 
     // UTM / traffic source
     const utmInfo = simData.utm_source ? `\n📡 <b>Origem:</b> <code>${simData.utm_source}${simData.utm_campaign ? ' / ' + simData.utm_campaign : ''}</code>` : '';
@@ -145,8 +144,7 @@ function sendTelegramAlert(simData, phone) {
       reply_markup: { inline_keyboard: inlineButtons }
     };
 
-    // Telegram fire-and-forget — não espera resposta
-    setImmediate(() => sendTelegramRequest(token, payload));
+    await sendTelegramRequest(token, payload);
   } catch (e) {}
 }
 
@@ -181,7 +179,7 @@ function saveSimulation(sim) {
   }
 }
 
-module.exports = function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-admin-token, x-admin-gate, x-admin-pwd');
@@ -239,7 +237,7 @@ module.exports = function handler(req, res) {
 
     // Save simulation to history & send telegram alert
     saveSimulation({ ...body, whatsapp_message: waText });
-    sendTelegramAlert({ ...body, whatsapp_message: waText }, phone);
+    await sendTelegramAlert({ ...body, whatsapp_message: waText }, phone);
 
     return res.status(200).json({
       success: true,

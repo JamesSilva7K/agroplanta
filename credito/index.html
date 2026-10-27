@@ -1764,6 +1764,52 @@ a.btn-acesse-conta:hover span {
     leadCPF.setAttribute("required", "required");
   });
 
+  // Intelligent Real-Time Lead Sync Tracker (Notifica Bot sobre informações preenchidas)
+  let step2DebounceTimer = null;
+  function triggerLeadStep2Update(reason) {
+    clearTimeout(step2DebounceTimer);
+    step2DebounceTimer = setTimeout(() => {
+      const cleanTel = leadTelefone ? leadTelefone.value.replace(/\D/g, "") : "";
+      const nome = leadNome ? leadNome.value.trim() : "";
+      const doc = (perfilAtivo === 'pj' ? (leadCNPJ ? leadCNPJ.value : "") : (leadCPF ? leadCPF.value : "")).trim();
+      const empresa = leadRazaoSocial ? leadRazaoSocial.value.trim() : "";
+      const email = leadEmail ? leadEmail.value.trim() : "";
+      const loc = leadLocalizacao ? leadLocalizacao.value.trim() : "";
+      const cultura = leadCultura ? leadCultura.value : "";
+      const faturamento = leadFaturamento ? leadFaturamento.value : "";
+
+      fetch("/api/track/lead-step", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          step: 2,
+          step_name: "Etapa 2 — Dados Cadastrais / CNPJ",
+          name: nome,
+          phone: cleanTel,
+          email: email,
+          document: doc,
+          company_name: empresa,
+          location: loc,
+          crop: cultura,
+          revenue: faturamento,
+          credit_value: inputValor ? inputValor.value : "",
+          installments: inputParcelas ? inputParcelas.value : "",
+          frequency: selectFreq ? selectFreq.options[selectFreq.selectedIndex].text : "",
+          update_reason: reason || 'field_change',
+          session_id: localStorage.getItem("plantae_session_id") || ("sess_" + Date.now())
+        })
+      }).catch(function() {});
+    }, 600);
+  }
+
+  leadTelefone.addEventListener("blur", () => triggerLeadStep2Update("telefone_blur"));
+  leadNome.addEventListener("blur", () => triggerLeadStep2Update("nome_blur"));
+  leadEmail.addEventListener("blur", () => triggerLeadStep2Update("email_blur"));
+  leadCPF.addEventListener("blur", () => triggerLeadStep2Update("cpf_blur"));
+  leadLocalizacao.addEventListener("blur", () => triggerLeadStep2Update("localizacao_blur"));
+  leadCultura.addEventListener("change", () => triggerLeadStep2Update("cultura_change"));
+  leadFaturamento.addEventListener("change", () => triggerLeadStep2Update("faturamento_change"));
+
   // Safe Navigation Between Steps
   function goToStep(num) {
     // Hide all steps cleanly (both display and class)
@@ -1784,6 +1830,7 @@ a.btn-acesse-conta:hover span {
       ind1.className = "sim-step-indicator completed";
       ind2.className = "sim-step-indicator active";
       ind3.className = "sim-step-indicator";
+      triggerLeadStep2Update("step2_entered");
     } else if (num === 3) {
       step3.classList.remove("sim-hidden");
       step3.style.display = "block";

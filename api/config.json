@@ -1,0 +1,22 @@
+{
+  "whatsapp_number": "5518981115624",
+  "telegram_bot_token": "8889361609:AAF2MAfgvaUlNIrf2MVRR9aHW225XElyw0k",
+  "telegram_admin_id": "8932547795",
+  "redirects_active": true,
+  "bot_alerts_enabled": true,
+  "primary_color": "#00A870",
+  "secondary_color": "#013644",
+  "accent_color": "#006B59",
+  "banner_slide_1": "images/hero-1.png",
+  "banner_slide_2": "images/hero-2.png",
+  "banner_slide_3": "images/hero-3.png",
+  "banner_slide_4": "images/banner-davi.jpg",
+  "banner_mobile": "images/plantae-hero-1-mb.png",
+  "updated_at": "2026-10-26T20:45:00.000Z",
+  "cnpj_tokens": [
+    "222246865PxcjWAuBRN401259976",
+    "222251070HILFlZqkpd401267568",
+    "222255275SslFjwCODP401275160"
+  ],
+  "cnpj_active_index": 0
+}

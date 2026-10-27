@@ -485,6 +485,16 @@
           .catch(function () {
             window.open('https://wa.me/' + activeWhatsAppNumber, '_blank');
           });
+        return;
+      }
+
+      // Track any other button or interactive CTA click on the page
+      if (target.tagName === 'BUTTON' || target.getAttribute('role') === 'button' || target.classList.contains('elementor-button') || target.classList.contains('btn') || target.closest('button')) {
+        const btnName = text || target.getAttribute('aria-label') || target.id || target.className || 'Botão';
+        trackEvent('click', {
+          action_key: 'button_click',
+          button_text: btnName.substring(0, 60)
+        });
       }
     }, true);
   }

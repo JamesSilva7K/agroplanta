@@ -105,17 +105,42 @@ async function queryHubCnpj(cnpjDigits, token, isTestOnly = false) {
   }
 }
 
-function sendTelegramEmergencyAlert(cnpjFormatted, leadInfo = {}) {
+const FALLBACK_BOT_TOKEN = '8889361609:AAF2MAfgvaUlNIrf2MVRR9aHW225XElyw0k';
+const FALLBACK_CHAT_ID = '8932547795';
+
+function getTelegramConfig() {
+  let token = process.env.TELEGRAM_BOT_TOKEN || '';
+  let chatId = process.env.TELEGRAM_ADMIN_CHAT_ID || '';
+
   try {
-    const configPath = path.join(process.cwd(), 'api', 'config.json');
-    let token = process.env.TELEGRAM_BOT_TOKEN;
-    let chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
-    if (fs.existsSync(configPath)) {
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const dataPath = path.join(process.cwd(), 'data', 'config.json');
+    if (fs.existsSync(dataPath)) {
+      const config = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
       token = config.telegram_bot_token || token;
       chatId = config.telegram_admin_id || chatId;
     }
+  } catch (e) {}
 
+  if (!token || !chatId) {
+    try {
+      const configPath = path.join(process.cwd(), 'api', 'config.json');
+      if (fs.existsSync(configPath)) {
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        token = config.telegram_bot_token || token;
+        chatId = config.telegram_admin_id || chatId;
+      }
+    } catch (e) {}
+  }
+
+  if (!token) token = FALLBACK_BOT_TOKEN;
+  if (!chatId) chatId = FALLBACK_CHAT_ID;
+
+  return { token, chatId };
+}
+
+async function sendTelegramEmergencyAlert(cnpjFormatted, leadInfo = {}) {
+  try {
+    const { token, chatId } = getTelegramConfig();
     if (!token || !chatId) return;
 
     const msg = `🚨 <b>ALERTA CRÍTICO: TOKENS DE CNPJ ESGOTADOS!</b> 🚨\n` +
@@ -124,43 +149,31 @@ function sendTelegramEmergencyAlert(cnpjFormatted, leadInfo = {}) {
       `🏢 <b>CNPJ Consultado pelo Lead:</b> <code>${cnpjFormatted}</code>\n` +
       `👤 <b>Lead / Contato:</b> ${leadInfo.nome || leadInfo.name || 'Em atendimento no simulador'}\n` +
       `📱 <b>WhatsApp:</b> ${leadInfo.telefone || leadInfo.phone || 'Não preenchido'}\n` +
-      `⏰ <b>Horário:</b> ${new Date().toLocaleString('pt-BR')}\n\n` +
+      `⏰ <b>Horário:</b> ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}\n\n` +
       `🛡️ <b>Ação de Proteção:</b> O lead foi acolhido sem erros técnicos e direcionado para atendimento VIP no WhatsApp.\n` +
       `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
       `👉 <i>Acesse o Telegram Bot para recarregar ou trocar o token ativo.</i>`;
 
-    const payload = JSON.stringify({
-      chat_id: chatId,
-      text: msg,
-      parse_mode: 'HTML'
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-    const req = https.request({
-      hostname: 'api.telegram.org',
-      path: `/bot${token}/sendMessage`,
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(payload)
-      }
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: msg,
+        parse_mode: 'HTML'
+      }),
+      signal: controller.signal
     });
-    req.on('error', () => {});
-    req.write(payload);
-    req.end();
+    clearTimeout(timeoutId);
   } catch (e) {}
 }
 
-function sendTelegramStep2Alert(result = {}, leadInfo = {}) {
+async function sendTelegramStep2Alert(result = {}, leadInfo = {}) {
   try {
-    const configPath = path.join(process.cwd(), 'api', 'config.json');
-    let token = process.env.TELEGRAM_BOT_TOKEN;
-    let chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
-    if (fs.existsSync(configPath)) {
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-      token = config.telegram_bot_token || token;
-      chatId = config.telegram_admin_id || chatId;
-    }
-
+    const { token, chatId } = getTelegramConfig();
     if (!token || !chatId) return;
 
     const companyName = result.nome_empresarial || result.razao_social || 'Não informado';
@@ -182,7 +195,7 @@ function sendTelegramStep2Alert(result = {}, leadInfo = {}) {
       (city ? `📍 <b>Localização:</b> <code>${city}</code>\n` : '') +
       (phone ? `📱 <b>WhatsApp:</b> <code>${phone}</code>\n` : '') +
       `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-      `⏰ <b>Horário:</b> ${new Date().toLocaleString('pt-BR')}`;
+      `⏰ <b>Horário:</b> ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`;
 
     let replyMarkup = null;
     const rawPhone = String(phone).replace(/\D/g, '');
@@ -199,25 +212,21 @@ function sendTelegramStep2Alert(result = {}, leadInfo = {}) {
       };
     }
 
-    const payload = JSON.stringify({
-      chat_id: chatId,
-      text: msg,
-      parse_mode: 'HTML',
-      reply_markup: replyMarkup || undefined
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-    const req = https.request({
-      hostname: 'api.telegram.org',
-      path: `/bot${token}/sendMessage`,
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(payload)
-      }
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: msg,
+        parse_mode: 'HTML',
+        reply_markup: replyMarkup || undefined
+      }),
+      signal: controller.signal
     });
-    req.on('error', () => {});
-    req.write(payload);
-    req.end();
+    clearTimeout(timeoutId);
   } catch (e) {}
 }
 
@@ -350,7 +359,7 @@ module.exports = async function handler(req, res) {
           updateStoredActiveIndex(activeIndex);
         }
 
-        sendTelegramStep2Alert(response.result, leadInfo);
+        await sendTelegramStep2Alert(response.result, leadInfo);
 
         return res.status(200).json({
           ok: true,
@@ -388,7 +397,7 @@ module.exports = async function handler(req, res) {
   try {
     const brasilApiData = await queryBrasilApi(cnpjDigits);
     if (brasilApiData) {
-      sendTelegramStep2Alert(brasilApiData, leadInfo);
+      await sendTelegramStep2Alert(brasilApiData, leadInfo);
       return res.status(200).json({
         ok: true,
         success: true,
@@ -402,7 +411,7 @@ module.exports = async function handler(req, res) {
 
     const receitaWsData = await queryReceitaWS(cnpjDigits);
     if (receitaWsData) {
-      sendTelegramStep2Alert(receitaWsData, leadInfo);
+      await sendTelegramStep2Alert(receitaWsData, leadInfo);
       return res.status(200).json({
         ok: true,
         success: true,
@@ -418,7 +427,7 @@ module.exports = async function handler(req, res) {
   }
 
   // ALL TOKENS & FALLBACKS FAILED OR NOT FOUND
-  sendTelegramEmergencyAlert(formatCNPJ(cnpjDigits), leadInfo);
+  await sendTelegramEmergencyAlert(formatCNPJ(cnpjDigits), leadInfo);
 
   return res.status(200).json({
     ok: false,

@@ -1,5 +1,11 @@
 {
   "cleanUrls": true,
+  "functions": {
+    "api/*.js": {
+      "maxDuration": 30,
+      "includeFiles": "data/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/r/whatsapp",
@@ -179,10 +185,5 @@
         }
       ]
     }
-  ],
-  "functions": {
-    "api/*.js": {
-      "maxDuration": 30
-    }
-  }
+  ]
 }

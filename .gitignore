@@ -9,6 +9,8 @@ node_modules/
 data/*.db
 data/*.db-shm
 data/*.db-wal
+data/events.json
+data/simulations.json
 *.sqlite
 *.sqlite3
 
